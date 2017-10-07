@@ -6,6 +6,7 @@ from tetris.util import Point, Dimension
 from tetris.sound import Mixer
 from tetris.piece import random_piece
 
+import GameState
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
 
@@ -211,6 +212,21 @@ class Tetris(object):
         if not self.valid_move(self.curr_piece):
             self.end_game()
         self.set_grid_piece(self.curr_piece)
+		
+		
+		############## CREATE ROOT NODE WHEN NEW PIECE HAS SPAWNED
+        root = GameState.GameNode(self.grid, self.curr_piece, self.next_piece) # create a copy of this state and generates every possible chil
+        root.printGrid(self.grid) # print this current state
+        children = root.getNextStates() # a list that contains every child to this current state
+
+		# THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
+        nextStates = []
+        for _ in range(2):
+            for child in children:
+                node = GameState.GameNode(child.getGrid(), child.getPiece(), child.getNextPiece())
+                node.getNextStates()
+                nextStates.append(node)
+        ##########################
     
     def new_game(self):
         self.grid = [[0 for y in xrange(GridSize.height)] for x in xrange(GridSize.width)]
