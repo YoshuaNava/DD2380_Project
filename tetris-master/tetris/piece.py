@@ -1,5 +1,6 @@
 import random
 from tetris.util import Point, Dimension
+from movePlacer import rotState
 
 def random_piece():
     pieces = [SquarePiece, IPiece, JPiece, LPiece, TPiece, SPiece, ZPiece]
@@ -13,6 +14,7 @@ class Piece(object):
         self.pos = Point(x, y)
         self.origin = Point(0, 0)
         self.size = Dimension(width, height)
+        self.rotState = rotState()
     
     # Set the grid values.
     def set(self, grid):
@@ -24,12 +26,14 @@ class Piece(object):
         rotated = zip(*self.grid)[::-1]
         self.set(rotated)
         self.size = self.size.rotate()
+        self.rotState.rot(1)
         
     # Rotate piece grid clockwise
     def rotate_right(self):
         rotated = zip(*self.grid[::-1])
         self.set(rotated)
         self.size = self.size.rotate()
+        self.rotState.rot(-1)
 
     # Return the first non-empty row
     def top(self):

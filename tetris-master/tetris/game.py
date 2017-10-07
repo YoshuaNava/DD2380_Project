@@ -1,5 +1,6 @@
 import sys
 import pygame
+from movePlacer import *
 from pygame.locals import *
 from tetris.image import Gallery
 from tetris.util import Point, Dimension
@@ -20,6 +21,7 @@ class Tetris(object):
         self.fall_speed = 30
         self.time_to_drop = self.fall_speed
         self.running = False
+        self.place = place
 
     def process_key_events(self, keys):
 
@@ -33,10 +35,10 @@ class Tetris(object):
             self.rotate_piece(1)
             
     def update(self):
-        
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
+            self.place(self, 4, 3)
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
