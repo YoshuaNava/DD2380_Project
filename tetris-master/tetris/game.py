@@ -39,7 +39,7 @@ class Tetris(object):
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
-            self.place(self, 4, 3)
+            #self.place(self, -1, 0) #column, rotation
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
