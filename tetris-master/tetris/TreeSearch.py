@@ -144,7 +144,7 @@ class MonteCarloTreeSearch(object):
         # print("-------- Expansion --------")
         unexplored_children = [child for child in future_nodes if child not in node.children]
         if(len(unexplored_children) == 0):
-            return node, random.choice(node.explored_children)
+            return node, random.choice(node.children)
         child = random.choice(unexplored_children)
         node.children.append(child)
         return node, child
