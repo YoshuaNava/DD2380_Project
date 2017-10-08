@@ -7,6 +7,7 @@ GridSize = Dimension(10, 20)
 class GameNode():
     hashtable = [0] * 1000000  # hashtable to avoid duplicate children
     children = []  # hold every child state
+    
     def __init__(self, grid, piece, nextpiece, actions = []):
         self.grid = copy.deepcopy(grid)
         self.curr_piece = copy.deepcopy(piece)

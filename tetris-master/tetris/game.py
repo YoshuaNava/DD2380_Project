@@ -8,6 +8,7 @@ from tetris.sound import Mixer
 from tetris.piece import random_piece
 
 import GameState
+
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
 
