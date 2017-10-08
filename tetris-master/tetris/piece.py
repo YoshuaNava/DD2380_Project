@@ -1,6 +1,6 @@
 import random
 from tetris.util import Point, Dimension
-from movePlacer import rotState
+from movePlacer import rotState, tranState
 
 def random_piece():
     pieces = [SquarePiece, IPiece, JPiece, LPiece, TPiece, SPiece, ZPiece]
@@ -15,6 +15,7 @@ class Piece(object):
         self.origin = Point(0, 0)
         self.size = Dimension(width, height)
         self.rotState = rotState()
+        self.tranState = tranState()
     
     # Set the grid values.
     def set(self, grid):

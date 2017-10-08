@@ -39,7 +39,7 @@ class Tetris(object):
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
-            #self.place(self, -1, 0) #column, rotation
+            self.place(self) #column, rotation
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
@@ -68,6 +68,7 @@ class Tetris(object):
         
         self.clear_grid_piece(self.curr_piece)
         self.curr_piece.pos.x += dx
+        self.curr_piece.tranState.move(dx)
         if not self.valid_move(self.curr_piece):
             self.curr_piece.pos.x -= dx
         else:
@@ -225,9 +226,9 @@ class Tetris(object):
         for _ in range(1):
             for child in children:
                 node = GameState.GameNode(child.getGrid(), child.getPiece(), child.getNextPiece(), child.getActions()) # create a node out of the game state
-                print node.getActions() # see what actions must be done to reach this state (num of rotations and translations)
-                node.printGrid() # print the grid
-
+                #print node.getActions() # see what actions must be done to reach this state (num of rotations and translations)
+                #node.printGrid() # print the grid
+        self.node = node
         ##########################
 
     def new_game(self):
