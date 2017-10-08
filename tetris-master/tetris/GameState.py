@@ -3,23 +3,25 @@ from tetris.util import Point, Dimension
 from tetris.piece import random_piece
 GridSize = Dimension(10, 20)
 
+#### GameNode contains all vital information about a game state ####
 class GameNode():
-    def __init__(self, grid, piece, nextpiece):
-        self.hashtable = [0] * 1000000 # hashtable to avoid duplicate children
-        self.children = [] # hold every child state
+    hashtable = [0] * 1000000  # hashtable to avoid duplicate children
+    children = []  # hold every child state
+    def __init__(self, grid, piece, nextpiece, actions = []):
         self.grid = copy.deepcopy(grid)
         self.curr_piece = copy.deepcopy(piece)
         self.next_piece = copy.deepcopy(nextpiece)
+        self.actions = actions
 
-    def findChildren(self):
+    def getChildren(self):
         for translation in range(-5,6,1): # translations relative middle
             for rotation in range(0, 4, 1): # number of rotations
                 grid = copy.deepcopy(self.grid)
                 piece = copy.deepcopy(self.curr_piece)
                 nextPiece = copy.deepcopy(self.next_piece)
 
-                # get the new state (for each performed move)
-                newState = TetrisGame(grid, piece, nextPiece, translation, rotation)
+                # simulate the game by dong a few rotations and translations: get the new state (for each performed move)
+                newState = TetrisGame(grid, piece, nextPiece, rotation, translation)
                 # get a state string (in order to hash it)
                 newStateGrid = newState.getGrid()
                 newStateString = self.gridToString(newStateGrid)
@@ -30,19 +32,21 @@ class GameNode():
                 if (self.hashtable[hashVal % 1000000] == 0):
                     self.hashtable[hashVal % 1000000] = 1
                     self.children.append(newState)
-                    self.printGrid(newState.getGrid())
 
-    def printGrid(self, grid):
-        print "\n"
+    def printGrid(self):
         state = [[0 for i in xrange(GridSize.width)] for i in xrange(GridSize.height)]
         for x in xrange(GridSize.width):
             for y in xrange(GridSize.height):
-                state[y][x] = grid[x][y]
+                state[y][x] = self.grid[x][y]
         for row in state:
             print row
+        print "\n"
 
     def getGrid(self):
         return self.grid
+
+    def getActions(self):
+        return self.actions
 
     def gridToString(self, grid):
         stateString = ""
@@ -52,16 +56,20 @@ class GameNode():
         return stateString
 
     def getNextStates(self):
-        self.findChildren()
+        self.getChildren()
         return self.children
 
+
+
+##### TetrisGame simulates a set of actions ######
 class TetrisGame():
-    def __init__(self, grid, piece, nextPiece, translation, rotation):
+    def __init__(self, grid, piece, nextPiece, rotation, translation):
         self.grid = copy.deepcopy(grid)
         self.curr_piece = copy.deepcopy(piece)
         self.next_piece = copy.deepcopy(nextPiece)
+        self.actions = [copy.deepcopy(rotation), copy.deepcopy(translation)]
 
-        # perform action
+        # perform actions
         self.rotate_piece(rotation)
         self.lateral_piece_move(translation)
         self.drop_piece()
@@ -74,6 +82,9 @@ class TetrisGame():
 
     def getNextPiece(self):
         return self.next_piece
+
+    def getActions(self):
+        return self.actions
 
     # Translate piece by delta
     def lateral_piece_move(self, dx):
