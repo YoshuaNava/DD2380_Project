@@ -7,7 +7,8 @@ from tetris.util import Point, Dimension
 from tetris.sound import Mixer
 from tetris.piece import random_piece
 
-import GameState
+# import GameState
+# from TreeSearch import MonteCarloTreeSearch, GameNode
 
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
@@ -40,7 +41,7 @@ class Tetris(object):
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
-            self.place(self) #column, rotation
+            # self.place(self) #column, rotation
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
@@ -213,23 +214,25 @@ class Tetris(object):
     def new_piece(self):
         self.curr_piece = self.next_piece
         self.next_piece = random_piece()
+
         if not self.valid_move(self.curr_piece):
             self.end_game()
         self.set_grid_piece(self.curr_piece)
 
-
         ############## CREATE ROOT NODE WHEN NEW PIECE HAS SPAWNED
-        root = GameState.GameNode(self.grid, self.curr_piece, self.next_piece) # create a copy of this state and generates every possible chil
-        root.printGrid() # print this current state
-        children = root.getNextStates() # a list that contains every child to this current state
+        # rotation = -1
+        # translation = -1
+        # state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
+        # root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
+        # children = root.getChildren() # a list that contains every child to this current node
+        # print("Current state")
+        # root.printGrid() # print this current node values
+        
 
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
-        for _ in range(1):
-            for child in children:
-                node = GameState.GameNode(child.getGrid(), child.getPiece(), child.getNextPiece(), child.getActions()) # create a node out of the game state
-                #print node.getActions() # see what actions must be done to reach this state (num of rotations and translations)
-                #node.printGrid() # print the grid
-        self.node = node
+        # for child in children:
+        #     print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #     print(child)
         ##########################
 
     def new_game(self):
