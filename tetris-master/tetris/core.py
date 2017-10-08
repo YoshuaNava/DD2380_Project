@@ -102,8 +102,11 @@ class Core(object):
         translation = -1
         state = GameState.TetrisGame(self.game.grid, self.game.curr_piece, self.game.next_piece, rotation, translation)
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
-        print(root)
-        children = root.getChildren() # a list that contains every child to this current node
+
+        ## Note: Before running MCTS we should verify if the game is over
+        mcts = MonteCarloTreeSearch(root)
+        mcts.run()
+        
 
 class Menu(object):
     

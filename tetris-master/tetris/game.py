@@ -224,9 +224,9 @@ class Tetris(object):
         # translation = -1
         # state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
         # root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
-        # children = root.getChildren() # a list that contains every child to this current node
         # print("Current state")
-        # root.printGrid() # print this current node values
+        # print(root)
+        # children = root.getChildren() # a list that contains every child to this current node
         
 
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED

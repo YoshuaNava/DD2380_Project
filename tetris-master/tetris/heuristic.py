@@ -1,4 +1,4 @@
-from tetris.util import  Dimension
+from tetris.util import Dimension
 
 GridSize = Dimension(10, 20)
 
@@ -14,7 +14,7 @@ def heuristic(gamefield):
     c = -0.2
 
     # Heuristic
-    h = a * h1  + b * h2 + c * h3
+    h = a * h1 + b * h2 + c * h3
 
     return h
 
@@ -26,9 +26,10 @@ def nHoles(gamefield):
     for row in xrange(GridSize.height):
         for col in xrange(GridSize.width):
             if(gamefield[row][col] <= 0):
-                if(GridSize.height-1-row < maxheights[col]):
+                if(GridSize.height - 1 - row < maxheights[col]):
                     nHoles += 1
     return nHoles
+
 
 # Number of completed lines
 """ OVERFLOW
@@ -44,11 +45,13 @@ def nCompletedLines(gamefield):
 
     return nLines
 """
+
 # Number of aggregate height
 def aggregateHeight(gamefield):
     sumHeight = sum(getMaxHeights(gamefield))
 
     return sumHeight
+
 
 # Variation of column heights
 def heightVariance(gamefield):
@@ -56,10 +59,11 @@ def heightVariance(gamefield):
 
     variance = 0
     for i in xrange(len(cols)):
-        if (i < len(cols)-1):
-            variance += abs(cols[i]-cols[i+1])
+        if (i < len(cols) - 1):
+            variance += abs(cols[i] - cols[i + 1])
 
     return variance
+
 
 # Get height of each column
 def getMaxHeights(gamefield):
@@ -68,13 +72,14 @@ def getMaxHeights(gamefield):
         tempHeight = []
         for row in xrange(GridSize.height):
             if (gamefield[row][col] > 0):
-                tempHeight.append(GridSize.height-1-row)
+                tempHeight.append(GridSize.height - 1 - row)
         if tempHeight:
             heights.append(max(tempHeight))
         else:
             heights.append(0)
 
     return heights
+
 
 def Main():
     # Test
@@ -100,6 +105,7 @@ def Main():
            [1, 1, 0, 1, 1, 1, 1, 0, 1, 1]]
     score = heuristic(map)
     print(score)
+
 
 if __name__ == '__main__':
     Main()

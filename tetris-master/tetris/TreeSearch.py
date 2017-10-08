@@ -17,7 +17,7 @@ def max_search(node, depth, max_depth):
     child_nodes = node.getChildren()
 
     if(depth >= max_depth) or (node.state.end_of_game is True):
-        return th.heuristic(node)
+        return th.heuristic(node.state.grid)
 
     max_val = -PSEUDO_INFINITY
     for child in child_nodes:
@@ -41,17 +41,16 @@ class GameNode(object):
         self.UCB = 0
 
     def getChildren(self):
-        for translation in range(-5, 6, 1):  # Translations relative to the middle of the board
+        children = []
+        # Translations relative to the middle of the board
+        for translation in range(-5, 6, 1):
             for rotation in range(0, 4, 1):  # Number of rotations
                 # Simulate the game by dong a few rotations and translations: get the new state (for each performed move)
-                action = (rotation, translation)
                 new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation)
+                action = (rotation, translation)
                 child = GameNode(new_state, self, action)
-                self.children.append(child)
+                children.append(child)
 
-                # Get a state string (in order to hash it)
-                # new_state_grid = new_state.getGrid()
-                # new_state_string = self.gridToString(new_state_grid)
                 # Calculate the hash value
                 # hash_val = abs(hash(new_state_string))
                 # Check for hash collision
@@ -59,9 +58,7 @@ class GameNode(object):
                 #     self.hashtable[hash_val % 1000000] = 1
                 #     child = GameNode(new_state.getGrid(), piece, next_piece, new_state.getActions())
                 #     self.children.append(child)
-
-        return self.children
-
+        return children
 
     def printGrid(self):
         state = [[0 for i in xrange(GameState.GridSize.width)]
@@ -108,20 +105,18 @@ class GameNode(object):
 class MonteCarloTreeSearch(object):
     """Monte Carlo Tree Search for Tetris."""
 
-    def __init__(self, game_state):
+    def __init__(self, root_node):
         # MCTS parameters
-        self.max_length = 10  # max search length
-        self.max_iter = 20
+        self.max_length = 1  # max search length
+        self.max_iter = 10
         self.max_time = 1.0
-        self.max_actions = 200
         self.time_start = 0
-        self.root = GameNode(game_state)
+        self.root = root_node
         self.root.parent = None
-        self.root.children = []
         self.root.plays = 1
         self.C = 1.4
 
-    def UCB(self, node, child, C):
+    def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
         return child.wins + self.C * math.sqrt(math.log(node.plays) / child.plays)
 
@@ -131,8 +126,8 @@ class MonteCarloTreeSearch(object):
         weights = np.zeros(len(node.children))
         i = 0
         for child in node.children:
-            w = self.UCB(self, node, child)
-            weights[i] = w
+            w_i = self.UCB(node, child)
+            weights[i] = w_i
             i += 1
         sum_weights = np.sum(weights)
         if(sum_weights != 0):
@@ -144,78 +139,65 @@ class MonteCarloTreeSearch(object):
         idx_max = np.argmax(weights)
         return node.children[idx_max]
 
-    def expansion(self, node):
+    def expansion(self, node, future_nodes):
         """This function expands the tree by checking if all the possible actions have been performed."""
-        print("-------- Expansion --------")
-        actions_taken = [child.action for child in node.children]
-        legal_actions = node.getLegalActions()
-        actions_left = [
-            action for action in legal_actions if action not in actions_taken]
-
-        if(len(actions_left) == 0):
-            return node, random.choice(node.children)
-
-        rand_action = random.choice(actions_left)
-
-        next_state = node.state.generateSuccessor(rand_action)
-        child = GameNode(next_state)
-        child.parent = node
-        child.action = rand_action
-        child.children = []
+        # print("-------- Expansion --------")
+        unexplored_children = [child for child in future_nodes if child not in node.children]
+        if(len(unexplored_children) == 0):
+            return node, random.choice(node.explored_children)
+        child = random.choice(unexplored_children)
         node.children.append(child)
-
         return node, child
 
     def selection(self):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
         print("-------- Selection --------")
-        node = self.root
-        legal_actions = node.getLegalActions(node.state)
         expanded = False
-
-        if(len(node.children) < len(legal_actions)):
-            # If we haven't explored all possible actions, choose one unexplored action randomly and expand the tree
-            _, node = self.expansion(node)
+        node = self.root
+        future_nodes = node.getChildren()
+        tree_depth = 0
+        if(len(node.children) < len(future_nodes)):
+            # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
+            _, node = self.expansion(self.root, future_nodes)
+            tree_depth += 1
         else:
+            future_nodes = node.getChildren()
             while(len(node.children) > 0):
-                legal_actions = node.getLegalActions()
-                if(len(node.children) == len(legal_actions)):
-                    # If we have explored all possible actions, pick the "best one"
+                if(len(node.children) == len(future_nodes)):
+                    # If we have explored all possible future states, pick the "best one"
                     node = self.UCB_sample(node)
                 else:
-                    # If we haven't explored all possible actions, choose one unexplored action randomly and expand the tree
-                    _, node = self.expansion(node)
+                    # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
+                    _, node = self.expansion(node, future_nodes)
+                    tree_depth += 1
                     expanded = True
 
             if (not expanded):
-                _, node = self.expansion(node)
+                _, node = self.expansion(node, future_nodes)
+                tree_depth += 1
 
+        print("    Tree depth explored = " + str(tree_depth))
         node.plays += 1
-
         return node
 
-    def simulation(self, child):
+    def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
         print("-------- Simulation --------")
-        state = child.state
         points = 0
         itr = 1
+        child = node
 
-        elapsed = time.time() - self.time_start
-        while (itr <= self.max_length) and (elapsed < 0.8):
+        while (itr <= self.max_length):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
-            legal_actions = state.getLegalActions(state)
-            action = random.choice(legal_actions)
-            state = state.generateSuccessor(action)
-            points += state.getPoints(child.state, state, self.root.state)
-
+            children = child.getChildren()
+            child = random.choice(children)
+            # points += th.heuristic(child.state.grid)   # Run heuristic here
             itr += 1
-            elapsed = time.time() - self.time_start
 
+        print("    Simulations ran = " + str(itr))
         if(points > 0):
             child.wins += 1
-
         return child
 
     def backpropagation(self, child):
@@ -237,37 +219,44 @@ class MonteCarloTreeSearch(object):
         root = self.backpropagation(node)
         return root
 
-    def play(self, game_state):
+    def run(self):
         """Monte Carlo Tree Search"""
-        print("\n*********  MCTS *********")
+        print("\n\n************  MCTS ************")
 
         self.time_start = time.time()
         elapsed = 0
-        actions = game_state.getLegalActions()
-        best_action = random.choice(actions)
-
-        if (self.root.state != game_state):
-            self.root = GameNode(game_state)
-            self.root.parent = None
-            self.root.children = []
-            self.root.plays = 1
+        children = self.root.getChildren()
+        best_child = random.choice(children)
+        print("    Length of future nodes list = " + str(len(children)))
 
         itr = 0
         while(itr < self.max_iter) and (elapsed < self.max_time):
-            self.root = self.MCTS_sample()
-            itr += 1
+            print("##### Iteration " + str(itr) + " #####")
+            # self.root = self.MCTS_sample()
+            node = self.selection()
             elapsed = time.time() - self.time_start
+            print("    Time elapsed = " + str(elapsed))
 
-        next_node = self.UCB_sample(self.root)
-        best_action = next_node.action
+            node = self.simulation(node)
+            elapsed = time.time() - self.time_start
+            print("    Time elapsed = " + str(elapsed))
 
-        return best_action
+            root = self.backpropagation(node)
+            elapsed = time.time() - self.time_start
+            print("    Time elapsed = " + str(elapsed))
+            itr += 1
+
+        best_child = self.UCB_sample(self.root)
+        print("    Number of nodes explored = " + str(len(self.root.children)))
+        print("    Best child action = " + str(best_child.action))
+
+        return best_child
 
 
 """ To instantiate this class, and play the game with MCTS, add the following snippet to the game code:
 
     if(gameState.getRound() == 0):
         mcts = MonteCarloTreeSearch(gameState)
-    mcts.play(game_state)
+    mcts.run(game_state)
 
 """
