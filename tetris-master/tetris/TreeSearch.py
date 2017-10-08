@@ -7,19 +7,19 @@ import math
 PSEUDO_INFINITY = 10000000000.0
 
 
+def max_search(self, node, depth, max_depth):
+    """ Search method that maximizes your score. """
+    depth += 1
+    child_states = node.getNextStates()
 
-def maxSearch(self, node, depth, max_depth):
-	depth += 1
-	child_states = node.getNextStates()
+    if(depth >= max_depth) or (len(child_states) == 0):
+        return th.heuristic(node)
 
-	if(depth>=max_depth) or (len(child_states) == 0):
-		return th.heuristic(node)
-	
-	v = -PSEUDO_INFINITY
+    max_val = -PSEUDO_INFINITY
 
-	for child in child_states:
-		child_node = GameState.GameNode(child.getGrid(), child.getPiece(), child.getNextPiece(), child.getActions())
-		v = max(v, maxSearch(self, child_node, depth, max_depth))
+    for child in child_states:
+        child_node = GameState.GameNode(
+            child.getGrid(), child.getPiece(), child.getNextPiece(), child.getActions())
+        max_val = max(max_val, max_search(self, child_node, depth, max_depth))
 
-	return v
-	
+    return max_val
