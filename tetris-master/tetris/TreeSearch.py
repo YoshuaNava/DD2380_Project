@@ -28,7 +28,7 @@ def max_search(node, depth, max_depth):
 
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
-    hashtable = [0] * 1000000  # hashtable to avoid duplicate children
+    hashtable = [0] * 100000  # hashtable to avoid duplicate children
     children = []  # hold every child state
 
     def __init__(self, state, parent=None, action=None):
@@ -49,15 +49,16 @@ class GameNode(object):
                 new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation)
                 action = (rotation, translation)
                 child = GameNode(new_state, self, action)
-                children.append(child)
 
-                # Calculate the hash value
-                # hash_val = abs(hash(new_state_string))
-                # Check for hash collision
-                # if (self.hashtable[hash_val % 1000000] == 0):
-                #     self.hashtable[hash_val % 1000000] = 1
-                #     child = GameNode(new_state.getGrid(), piece, next_piece, new_state.getActions())
-                #     self.children.append(child)
+                # hashing preprocess
+                child_grid_string = child.gridToString()
+                hash_value = abs(hash(child_grid_string))
+
+                # if this child has not been added yet, append it to the children list
+                if (self.hashtable[hash_value % 100000] == 0):
+                     self.hashtable[hash_value % 100000] = 1
+                     children.append(child)
+
         return children
 
     def printGrid(self):
