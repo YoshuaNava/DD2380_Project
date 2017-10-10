@@ -153,6 +153,7 @@ class MonteCarloTreeSearch(object):
         """This function expands the tree by checking if all the possible actions have been performed."""
         # print("-------- Expansion --------")
         unexplored_children = [child for child in future_nodes if child not in node.children]
+
         if(len(unexplored_children) == 0):
             return node, random.choice(node.children)
         child = random.choice(unexplored_children)
@@ -166,12 +167,19 @@ class MonteCarloTreeSearch(object):
         node = self.root
         future_nodes = node.getChildren()
         tree_depth = 0
+
+        print("Father")
+        print(node)            
+        print(len(future_nodes))
         if(len(node.children) < len(future_nodes)):
             # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
             _, node = self.expansion(self.root, future_nodes)
             tree_depth += 1
         else:
             future_nodes = node.getChildren()
+            for child in future_nodes:
+                print("child")
+                print(child)
             while(len(node.children) > 0):
                 if(len(node.children) == len(future_nodes)):
                     # If we have explored all possible future states, pick the "best one"
