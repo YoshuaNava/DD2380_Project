@@ -5,9 +5,6 @@ from tetris.game import Tetris
 from tetris.image import Gallery
 from tetris.util import ScreenSize
 
-import GameState
-from TreeSearch import MonteCarloTreeSearch, GameNode
-
 class Core(object):
 
     Menu, Running, Paused, GameOver = xrange(4)
@@ -37,7 +34,6 @@ class Core(object):
             else:
                 if self.state == self.Running:
                     self.game.process_key_events(self.keys)
-                    self.play()     # Our playing method
                     self.game.update()
                 self.game.render(self.gfx, self.gallery)
             
@@ -97,16 +93,7 @@ class Core(object):
             label = font.render("PAUSED", 1, (255, 255, 255))
             self.gfx.blit(label, ((ScreenSize[0] / 2) - (label.get_width() / 2), 180))
 
-    def play(self):
-        rotation = -1
-        translation = -1
-        state = GameState.TetrisGame(self.game.grid, self.game.curr_piece, self.game.next_piece, rotation, translation)
-        root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
 
-        ## Note: Before running MCTS we should verify if the game is over
-        mcts = MonteCarloTreeSearch(root)
-        mcts.run()
-        
 
 class Menu(object):
     

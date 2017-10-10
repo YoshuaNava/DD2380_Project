@@ -7,8 +7,8 @@ from tetris.util import Point, Dimension
 from tetris.sound import Mixer
 from tetris.piece import random_piece
 
-# import GameState
-# from TreeSearch import MonteCarloTreeSearch, GameNode
+import GameState
+from TreeSearch import MonteCarloTreeSearch, GameNode
 
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
@@ -219,28 +219,41 @@ class Tetris(object):
             self.end_game()
         self.set_grid_piece(self.curr_piece)
 
+
+        # self.play()     # Our playing method
         ############## CREATE ROOT NODE WHEN NEW PIECE HAS SPAWNED
-        # rotation = -1
-        # translation = -1
-        # state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
-        # root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
-        # print("Current state")
-        # print(root)
-        # children = root.getChildren() # a list that contains every child to this current node
+        rotation = -1
+        translation = -1
+        state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
+        root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
+        print("Current state")
+        print(root)
+        children = root.getChildren() # a list that contains every child to this current node
         
 
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
-        # for child in children:
-        #     print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        #     print(child)
+        for child in children:
+            print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(child)
         ##########################
+
+    def play(self):
+        rotation = -1
+        translation = -1
+        state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
+        root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
+
+        ## Note: Before running MCTS we should verify if the game is over
+        mcts = MonteCarloTreeSearch(root)
+        mcts.run()
+        
 
     def new_game(self):
         self.grid = [[0 for y in xrange(GridSize.height)] for x in xrange(GridSize.width)]
         self.stats = Statistics()
         self.new_piece()
-        self.mixer.start.play()
-        self.mixer.loop_music()
+        # self.mixer.start.play()
+        # self.mixer.loop_music()
         self.fall_speed = 30
         self.time_to_drop = self.fall_speed
         self.running = True
