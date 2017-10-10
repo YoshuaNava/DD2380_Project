@@ -119,13 +119,13 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_length = 1  # max search length
-        self.max_iter = 10
+        self.max_iter = 20
         self.max_time = 1.0
         self.time_start = 0
         self.root = root_node
         self.root.parent = None
         self.root.plays = 1
-        self.C = 1.4
+        self.C = 0.5
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
@@ -154,7 +154,6 @@ class MonteCarloTreeSearch(object):
         """This function expands the tree by checking if all the possible actions have been performed."""
         # print("-------- Expansion --------")
         unexplored_children = [child for child in future_states if child not in node.children]
-
         if(len(unexplored_children) == 0):
             return node, random.choice(node.children)
         child = random.choice(unexplored_children)
@@ -164,41 +163,25 @@ class MonteCarloTreeSearch(object):
     def selection(self):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
         print("-------- Selection --------")
-        expanded = False
         node = self.root
-        future_states = self.root.getFutureStates()
-        tree_depth = 0
+        future_states = node.getFutureStates()
 
-        print("Father")
-        print(node)
-        print("Number of future nodes:")
-        print(len(future_states))
-        # for child in future_states:
-        #     print("child")
-        #     print(child)
         if(len(node.children) < len(future_states)):
-            # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
+            # If we haven't explored all possible future states near the root, choose one unexplored state randomly and expand the tree
             _, node = self.expansion(self.root, future_states)
-            tree_depth += 1
         else:
-            future_states = node.getFutureStates()
+            # Let's search for a leaf in the tree
             while(len(node.children) > 0):
                 if(len(node.children) == len(future_states)):
                     # If we have explored all possible future states, pick the "best one"
                     node = self.UCB_sample(node)
                 else:
-                    # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
                     _, node = self.expansion(node, future_states)
-                    tree_depth += 1
-                    expanded = True
+                future_states = node.getFutureStates()
 
-            if (not expanded):
-                _, node = self.expansion(node, future_states)
-                tree_depth += 1
-
-        print("    Tree depth explored = " + str(tree_depth))
         node.plays += 1
         return node
+
 
     def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
@@ -207,7 +190,6 @@ class MonteCarloTreeSearch(object):
         points = 0
         itr = 1
         child = node
-
         while (itr <= self.max_length):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             children = child.getFutureStates()
@@ -270,10 +252,10 @@ class MonteCarloTreeSearch(object):
             itr += 1
 
         best_state = self.UCB_sample(self.root)
-        print("    Number of nodes explored = " + str(len(self.root.children)))
-        print("    Best future state")
+        print("    Number of nodes explored near root = " + str(len(self.root.children)))
+        print("    Best future state:")
         print(best_state)
-        print("    Best child action = " + str(best_state.action))
+        print("    Best action to take = " + str(best_state.action))
 
         return best_state
 
