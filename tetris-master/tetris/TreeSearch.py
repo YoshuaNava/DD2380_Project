@@ -211,7 +211,10 @@ class MonteCarloTreeSearch(object):
         while (itr <= self.max_length):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             children = child.getFutureStates()
-            child = random.choice(children)
+            if(len(children) > 0):
+                child = random.choice(children)
+            else:
+                break
             # points += th.heuristic(child.state.grid)   # Run heuristic here
             itr += 1
 
