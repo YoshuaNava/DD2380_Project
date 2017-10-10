@@ -17,7 +17,7 @@ def max_search(node, depth, max_depth):
     child_nodes = node.getChildren()
 
     if(depth >= max_depth) or (node.state.end_of_game is True):
-        return th.heuristic(node.state.grid)
+        return th.heuristic(node.state.getState())
 
     max_val = -PSEUDO_INFINITY
     for child in child_nodes:
@@ -70,6 +70,15 @@ class GameNode(object):
         for row in state:
             print(row)
         print("\n")
+
+    def getState(self):
+        state = [[0 for i in xrange(GameState.GridSize.width)]
+                 for i in xrange(GameState.GridSize.height)]
+        for x in xrange(GameState.GridSize.width):
+            for y in xrange(GameState.GridSize.height):
+                state[y][x] = self.state.grid[x][y]
+
+        return state
 
     def getGrid(self):
         return self.state.grid

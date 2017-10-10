@@ -23,7 +23,7 @@ def nHoles(gamefield):
     nHoles = 0
     maxheights = getMaxHeights(gamefield)
 
-    for row in xrange(GridSize.height):
+    for row in xrange(4,GridSize.height):
         for col in xrange(GridSize.width):
             if(gamefield[row][col] <= 0):
                 if(GridSize.height - 1 - row < maxheights[col]):
@@ -70,7 +70,7 @@ def getMaxHeights(gamefield):
     heights = []
     for col in xrange(GridSize.width):
         tempHeight = []
-        for row in xrange(GridSize.height):
+        for row in xrange(4,GridSize.height):
             if (gamefield[row][col] > 0):
                 tempHeight.append(GridSize.height - 1 - row)
         if tempHeight:
@@ -79,33 +79,3 @@ def getMaxHeights(gamefield):
             heights.append(0)
 
     return heights
-
-
-def Main():
-    # Test
-    map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-           [0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-           [0, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-           [0, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-           [1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 0, 1, 1],
-           [1, 1, 0, 1, 1, 1, 1, 0, 1, 1]]
-    score = heuristic(map)
-    print(score)
-
-
-if __name__ == '__main__':
-    Main()
