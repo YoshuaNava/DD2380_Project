@@ -14,10 +14,11 @@ class TetrisGame():
         self.action = (copy.deepcopy(rotation), copy.deepcopy(translation))
         self.end_of_game = False
 
-        # perform actions
-        self.rotate_piece(rotation)
-        self.lateral_piece_move(translation)
-        self.drop_piece()
+        # perform actions IF NOT ROOT NODE
+        if (rotation != -1 and translation != -1):
+            self.rotate_piece(rotation)
+            self.lateral_piece_move(translation)
+            self.drop_piece()
 
     def getGrid(self):
         return self.grid

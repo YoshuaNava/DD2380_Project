@@ -108,9 +108,9 @@ class GameNode(object):
 
     def __str__(self):
         if(self.parent is None):
-            return ("ROOT" + "\nState: " + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\n")
+            return ("ROOT" + "\nState: " + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
         else:
-            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\n")
+            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
 
 
 class MonteCarloTreeSearch(object):

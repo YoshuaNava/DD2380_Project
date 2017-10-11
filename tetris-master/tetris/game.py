@@ -222,14 +222,16 @@ class Tetris(object):
 
         # self.play()     # Our playing method
         ############## CREATE ROOT NODE WHEN NEW PIECE HAS SPAWNED
+
+        # rotation and translation -1 SAYS THAT THIS IS THE ROOT NODE!
         rotation = -1
         translation = -1
+
         state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
         print("Current state")
         print(root)
-        children = root.getChildren() # a list that contains every child to this current node
-        
+        children = root.getFutureStates() # a list that contains every child to this current node
 
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
         for child in children:
@@ -238,6 +240,7 @@ class Tetris(object):
         ##########################
 
     def play(self):
+
         rotation = -1
         translation = -1
         state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
