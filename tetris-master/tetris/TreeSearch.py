@@ -3,28 +3,13 @@ import math
 import random
 import copy
 import numpy as np
+import operator
 from tetris.util import Point, Dimension
 from tetris.piece import random_piece
 import GameState
 import tetris.heuristic as th
 
 PSEUDO_INFINITY = 10000000000.0
-
-
-def max_search(node, depth, max_depth):
-    """Search method that maximizes your score."""
-    depth += 1
-    child_nodes = node.getFutureStates()
-
-    if(depth >= max_depth) or (node.state.end_of_game is True):
-        return th.heuristic(node.state.getState())
-
-    max_val = -PSEUDO_INFINITY
-    for child in child_nodes:
-        max_val = max(max_val, max_search(child, depth, max_depth))
-
-    return max_val
-
 
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
@@ -40,7 +25,11 @@ class GameNode(object):
         self.plays = 0
         self.UCB = 0
         self.heuristic = th.heuristic(self.getState())
-        self.cleared_rows = state.cleared_rows # THIS IS THE NUMBER OF CLEARED ROWS FROM PARENT NODE --> THIS NODE (that is, only one step)
+        if(parent is not None):
+            self.state.updateScore()
+
+        # self.cleared_rows = state.cleared_rows # THIS IS THE NUMBER OF CLEARED ROWS FROM PARENT NODE --> THIS NODE (that is, only one step)
+        
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
@@ -48,7 +37,8 @@ class GameNode(object):
             for translation in range(-5, 6, 1):
                 for rotation in range(0, 4, 1):  # Number of rotations
                     # Simulate the game by dong a few rotations and translations: get the new state (for each performed move)
-                    new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation)
+                    new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation, self.state.level, self.state.lines, self.state.score)
+
                     action = (rotation, translation)
                     child = GameNode(new_state, self, action)
 
@@ -71,11 +61,6 @@ class GameNode(object):
                 state[y][x] = self.state.grid[x][y]
         return state
 
-    def getGrid(self):
-        return self.state.grid
-
-    def getAction(self):
-        return self.action
 
     def gridToString(self):
         state_string = ""
@@ -98,9 +83,9 @@ class GameNode(object):
 
     def __str__(self):
         if(self.parent is None):
-            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
+            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic) + "\nGameScore: " + str(self.state.score))
         else:
-            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
+            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic) + "\nGameScore: " + str(self.state.score))
 
 
 class MonteCarloTreeSearch(object):
@@ -108,14 +93,14 @@ class MonteCarloTreeSearch(object):
 
     def __init__(self, root_node):
         # MCTS parameters
-        self.max_simulations = 5  # max search length
-        self.max_iter = 20
-        self.max_time = 2.0
+        self.max_simulations = 1  # max search length
+        self.max_iter = 1
+        self.max_time = 3.0
         self.time_start = 0
         self.root = root_node
         self.root.parent = None
         self.root.plays = 1
-        self.C = 1
+        self.C = 1.0
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
@@ -168,31 +153,40 @@ class MonteCarloTreeSearch(object):
                 else:
                     _, node = self.expansion(node)
                 future_states = node.getFutureStates()
-
         node.plays += 1
         return node
-
 
     def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
         print("-------- Simulation --------")
-        points = 0
-        itr = 1
+        itr = 0
         child = node
-        while (itr <= self.max_simulations):
+        while (itr < self.max_simulations):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             children = child.getFutureStates()
             if(len(children) > 0):
-                child = random.choice(children)
+                # child = random.choice(children)   # Random policy
+                max_val = -PSEUDO_INFINITY
+                index = random.randint(0, len(children)-1)
+                for i in range(len(children)):
+                    if(max_val < children[i].heuristic):
+                        max_val = children[i].heuristic
+                        print(children[i].heuristic)
+                        print(child)
+                        index = i
+                        
+                child = children[index]
             else:
                 break
-            points += child.heuristic   # Run heuristic here
             itr += 1
 
         print("    Simulations ran = " + str(itr))
-        print("    points/max_sims = " + str(points/self.max_simulations))
-        if (points/self.max_simulations > -30):
+        # if (points/self.max_simulations > -30):
+        if (self.root.state.score < child.state.score) and (self.root.state.cleared_rows < child.state.cleared_rows):
+            print("promising branch!!!!!!!!")
+            print(self.root.state.score)
+            print(child.state.score)
             child.wins += 1
         return child
 
@@ -223,6 +217,7 @@ class MonteCarloTreeSearch(object):
         elapsed = 0
 
         future_states = self.root.getFutureStates()
+        print(self.root)
         print("    Length of future nodes list = " + str(len(future_states)))
 #        best_state = random.choice(future_states)
 

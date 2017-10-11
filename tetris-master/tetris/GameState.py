@@ -7,19 +7,42 @@ GridSize = Dimension(10, 20)
 
 
 class TetrisGame():
-    def __init__(self, grid, piece, nextPiece, rotation, translation):
+    Scores = {
+        0: 10, 
+        1: 100, 
+        2: 300, 
+        3: 500, 
+        4: 1000
+    }
+
+    def __init__(self, grid, piece, nextPiece, rotation, translation, level=0, lines=0, score=0):
         self.grid = copy.deepcopy(grid)
         self.curr_piece = copy.deepcopy(piece)
         self.next_piece = copy.deepcopy(nextPiece)
         self.action = (copy.deepcopy(rotation), copy.deepcopy(translation))
         self.end_of_game = False
         self.cleared_rows = 0
+        self.level = level
+        self.lines = lines
+        self.score = score
 
         # perform actions IF NOT ROOT NODE
         if (rotation != -1 and translation != -1):
             self.rotate_piece(rotation)
             self.lateral_piece_move(translation)
             self.drop_piece()
+
+
+    def updateScore(self):
+        # Find cleared rows
+        cleared = []
+        for y in xrange(GridSize.height):
+            if (len([x for x in xrange(GridSize.width) if self.grid[x][y]]) == GridSize.width):
+                cleared.append(y)
+        self.score += self.Scores[len(cleared)]
+        self.lines += len(cleared)
+        if self.lines / 10 > self.level:
+            self.level += 1
 
     def getGrid(self):
         return self.grid

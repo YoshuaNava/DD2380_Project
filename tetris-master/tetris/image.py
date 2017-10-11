@@ -21,7 +21,7 @@ class Gallery(object):
         
         # Parse blocks from sprite sheet
         width, height = BlockSize.width, BlockSize.height
-        blocksheet = SpriteSheet("blocks.png")
+        blocksheet = SpriteSheet("_blocks.png")
         for level in xrange(11):
             blockset = []
             for index in xrange(3):
