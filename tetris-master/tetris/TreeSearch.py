@@ -28,14 +28,14 @@ def max_search(node, depth, max_depth):
 
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
-    hashtable = [0] * 100000  # hashtable to avoid duplicate children
 
     def __init__(self, state, parent=None, action=None):
+        self.hashtable = [0] * 10000  # hashtable to avoid duplicate children
         self.state = state # contains the copy of the game state
         self.action = action # the action that led to this state
         self.parent = parent # parent node reference
         self.visited_states = []
-        self.future_states = [] # is self.children and self.future_Staes the same thing??
+        self.future_states = []
         self.wins = 0
         self.plays = 0
         self.UCB = 0
@@ -56,8 +56,8 @@ class GameNode(object):
                     hash_value = abs(hash(child_grid_string))
 
                     # if this child has not been added yet, append it to the children list
-                    if (self.hashtable[hash_value % 100000] == 0):
-                        self.hashtable[hash_value % 100000] = 1
+                    if (self.hashtable[hash_value % 10000] == 0):
+                        self.hashtable[hash_value % 10000] = 1
                         self.future_states.append(child)
 
         return self.future_states
@@ -107,14 +107,14 @@ class MonteCarloTreeSearch(object):
 
     def __init__(self, root_node):
         # MCTS parameters
-        self.max_length = 1  # max search length
+        self.max_simulations = 5  # max search length
         self.max_iter = 20
-        self.max_time = 1.0
+        self.max_time = 2.0
         self.time_start = 0
         self.root = root_node
         self.root.parent = None
         self.root.plays = 1
-        self.C = 0.5
+        self.C = 1
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
@@ -179,18 +179,19 @@ class MonteCarloTreeSearch(object):
         points = 0
         itr = 1
         child = node
-        while (itr <= self.max_length):
+        while (itr <= self.max_simulations):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             children = child.getFutureStates()
             if(len(children) > 0):
                 child = random.choice(children)
             else:
                 break
-            # points += th.heuristic(child.state.grid)   # Run heuristic here
+            points += child.heuristic   # Run heuristic here
             itr += 1
 
         print("    Simulations ran = " + str(itr))
-        if(points > 0):
+        print("    points/max_sims = " + str(points/self.max_simulations))
+        if (points/self.max_simulations > -30):
             child.wins += 1
         return child
 
@@ -219,9 +220,10 @@ class MonteCarloTreeSearch(object):
 
         self.time_start = time.time()
         elapsed = 0
+
         future_states = self.root.getFutureStates()
-        best_state = random.choice(future_states)
         print("    Length of future nodes list = " + str(len(future_states)))
+#        best_state = random.choice(future_states)
 
         itr = 0
         while(itr < self.max_iter) and (elapsed < self.max_time):

@@ -231,7 +231,6 @@ class Tetris(object):
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
         print("Current state")
         print(root)
-        children = root.getFutureStates() # a list that contains every child to this current node
 
         '''
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
