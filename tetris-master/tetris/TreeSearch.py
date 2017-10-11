@@ -29,17 +29,17 @@ def max_search(node, depth, max_depth):
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
     hashtable = [0] * 100000  # hashtable to avoid duplicate children
-    children = []  # hold every child state
 
     def __init__(self, state, parent=None, action=None):
-        self.state = state
-        self.action = action
-        self.parent = parent
-        self.children = []
-        self.future_states = []
+        self.state = state # contains the copy of the game state
+        self.action = action # the action that led to this state
+        self.parent = parent # parent node reference
+        self.visited_states = []
+        self.future_states = [] # is self.children and self.future_Staes the same thing??
         self.wins = 0
         self.plays = 0
         self.UCB = 0
+        self.heuristic = th.heuristic(self.getState())
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
@@ -62,23 +62,12 @@ class GameNode(object):
 
         return self.future_states
 
-    def printGrid(self):
-        state = [[0 for i in xrange(GameState.GridSize.width)]
-                 for i in xrange(GameState.GridSize.height)]
-        for x in xrange(GameState.GridSize.width):
-            for y in xrange(GameState.GridSize.height):
-                state[y][x] = self.state.grid[x][y]
-        for row in state:
-            print(row)
-        print("\n")
-
     def getState(self):
         state = [[0 for i in xrange(GameState.GridSize.width)]
                  for i in xrange(GameState.GridSize.height)]
         for x in xrange(GameState.GridSize.width):
             for y in xrange(GameState.GridSize.height):
                 state[y][x] = self.state.grid[x][y]
-
         return state
 
     def getGrid(self):
@@ -108,9 +97,9 @@ class GameNode(object):
 
     def __str__(self):
         if(self.parent is None):
-            return ("ROOT" + "\nState: " + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\n")
+            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
         else:
-            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\n")
+            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
 
 
 class MonteCarloTreeSearch(object):
@@ -119,13 +108,13 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_length = 1  # max search length
-        self.max_iter = 10
+        self.max_iter = 20
         self.max_time = 1.0
         self.time_start = 0
         self.root = root_node
         self.root.parent = None
         self.root.plays = 1
-        self.C = 1.4
+        self.C = 0.5
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
@@ -134,9 +123,9 @@ class MonteCarloTreeSearch(object):
     def UCB_sample(self, node):
         """Sampling of tree nodes based on their UCB1 values."""
         print("-------- UCB sampling --------")
-        weights = np.zeros(len(node.children))
+        weights = np.zeros(len(node.visited_states))
         i = 0
-        for child in node.children:
+        for child in node.visited_states:
             w_i = self.UCB(node, child)
             weights[i] = w_i
             i += 1
@@ -144,61 +133,44 @@ class MonteCarloTreeSearch(object):
         if(sum_weights != 0):
             weights /= sum_weights
             i = 0
-            for child in node.children:
+            for child in node.visited_states:
                 child.UCB = weights[i]
                 i += 1
         idx_max = np.argmax(weights)
-        return node.children[idx_max]
+        return node.visited_states[idx_max]
 
-    def expansion(self, node, future_states):
+    def expansion(self, node):
         """This function expands the tree by checking if all the possible actions have been performed."""
         # print("-------- Expansion --------")
-        unexplored_children = [child for child in future_states if child not in node.children]
-
-        if(len(unexplored_children) == 0):
-            return node, random.choice(node.children)
-        child = random.choice(unexplored_children)
-        node.children.append(child)
+        unexplored_states = [child for child in node.future_states if child not in node.visited_states]
+        if(len(unexplored_states) == 0):
+            return node, random.choice(node.visited_states)
+        child = random.choice(unexplored_states)
+        node.visited_states.append(child)
         return node, child
 
     def selection(self):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
         print("-------- Selection --------")
-        expanded = False
         node = self.root
-        future_states = self.root.getFutureStates()
-        tree_depth = 0
+        future_states = node.getFutureStates()
 
-        print("Father")
+        if(len(node.visited_states) < len(future_states)):
         # print(node)
-        print("Number of future nodes:")
-        print(len(future_states))
-        # for child in future_states:
-        #     print("child")
-        #     print(child)
-        if(len(node.children) < len(future_states)):
-            # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
-            _, node = self.expansion(self.root, future_states)
-            tree_depth += 1
+            _, node = self.expansion(self.root)
         else:
-            future_states = node.getFutureStates()
-            while(len(node.children) > 0):
-                if(len(node.children) == len(future_states)):
+            # Let's search for a leaf in the tree
+            while(len(node.visited_states) > 0):
+                if(len(node.visited_states) == len(future_states)):
                     # If we have explored all possible future states, pick the "best one"
                     node = self.UCB_sample(node)
                 else:
-                    # If we haven't explored all possible future states, choose one unexplored state randomly and expand the tree
-                    _, node = self.expansion(node, future_states)
-                    tree_depth += 1
-                    expanded = True
+                    _, node = self.expansion(node)
+                future_states = node.getFutureStates()
 
-            if (not expanded):
-                _, node = self.expansion(node, future_states)
-                tree_depth += 1
-
-        print("    Tree depth explored = " + str(tree_depth))
         node.plays += 1
         return node
+
 
     def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
@@ -207,7 +179,6 @@ class MonteCarloTreeSearch(object):
         points = 0
         itr = 1
         child = node
-
         while (itr <= self.max_length):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             children = child.getFutureStates()
@@ -270,10 +241,10 @@ class MonteCarloTreeSearch(object):
             itr += 1
 
         best_state = self.UCB_sample(self.root)
-        print("    Number of nodes explored = " + str(len(self.root.children)))
-        print("    Best future state")
+        print("    Number of nodes explored near root = " + str(len(self.root.visited_states)))
+        print("    Best future state:")
         print(best_state)
-        print("    Best child action = " + str(best_state.action))
+        print("    Best action to take = " + str(best_state.action))
 
         return best_state
 
