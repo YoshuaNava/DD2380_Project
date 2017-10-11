@@ -156,7 +156,7 @@ class MonteCarloTreeSearch(object):
         future_states = node.getFutureStates()
 
         if(len(node.visited_states) < len(future_states)):
-            # If we haven't explored all possible future states near the root, choose one unexplored state randomly and expand the tree
+        # print(node)
             _, node = self.expansion(self.root)
         else:
             # Let's search for a leaf in the tree

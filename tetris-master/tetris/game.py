@@ -19,7 +19,6 @@ class Tetris(object):
         self.grid = []
         self.mixer = Mixer()
         self.stats = Statistics()
-
         self.next_piece = random_piece()
         self.fall_speed = 30
         self.time_to_drop = self.fall_speed
@@ -41,7 +40,7 @@ class Tetris(object):
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
-            # self.place(self) #column, rotation
+            self.place(self)
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
@@ -233,14 +232,15 @@ class Tetris(object):
         print(root)
 
         '''
-        #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
-        for child in children:
-            print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            print(child)
-        ##########################
+        # #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
+        # for child in children:
+        #     print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #     print(child)
+        # ##########################
             '''
         mcts = MonteCarloTreeSearch(root)
-        mcts.run()
+        best_child = mcts.run()
+        self.best_action = best_child.action
 
     def play(self):
 
@@ -249,10 +249,17 @@ class Tetris(object):
         state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation)
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
 
+
         ## Note: Before running MCTS we should verify if the game is over
         mcts = MonteCarloTreeSearch(root)
-        mcts.run()
-        
+        best_child = mcts.run();
+        print "ahhhhhhhhhhhhhhhhhhh"
+        self.best_action = best_child.action
+        print type(best_child)
+        print type(state.curr_piece)
+        print type(root)
+        # self.place(state, best_action)
+
 
     def new_game(self):
         self.grid = [[0 for y in xrange(GridSize.height)] for x in xrange(GridSize.width)]
