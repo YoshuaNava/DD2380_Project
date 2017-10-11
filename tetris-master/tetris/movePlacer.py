@@ -1,8 +1,12 @@
 
+
 def place(self):
-    actions = self.node.getActions()
+    actions = self.best_action
     rot = self.curr_piece.rotState.r
     tran = self.curr_piece.tranState.t
+    print "aaaaaahhhhh"
+    print rot
+    print tran
     if (actions[1] > tran):
         self.lateral_piece_move(1)
     elif (actions[1] < tran):
@@ -23,12 +27,12 @@ class rotState(object):
 
     def set(self, r):
         self.r = r
-        self.rInBounds()
+        # self.rInBounds()
 
         
     def rot(self, dr):
         self.r += dr
-        self.rInBounds()
+        # self.rInBounds()
             
     def rInBounds(self):
         if (self.r > 3):

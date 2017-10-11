@@ -170,7 +170,7 @@ class MonteCarloTreeSearch(object):
         tree_depth = 0
 
         print("Father")
-        print(node)
+        # print(node)
         print("Number of future nodes:")
         print(len(future_states))
         # for child in future_states:

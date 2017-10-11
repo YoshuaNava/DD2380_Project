@@ -28,6 +28,8 @@ class Piece(object):
         self.set(rotated)
         self.size = self.size.rotate()
         self.rotState.rot(1)
+        print "FAAAAK"
+        print self.rotState.r
         
     # Rotate piece grid clockwise
     def rotate_right(self):
