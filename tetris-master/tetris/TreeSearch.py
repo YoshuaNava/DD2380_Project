@@ -39,6 +39,7 @@ class GameNode(object):
         self.wins = 0
         self.plays = 0
         self.UCB = 0
+        self.heuristic = th.heuristic(self.getState())
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
@@ -96,9 +97,9 @@ class GameNode(object):
 
     def __str__(self):
         if(self.parent is None):
-            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
+            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
         else:
-            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
+            return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(self.heuristic))
 
 
 class MonteCarloTreeSearch(object):

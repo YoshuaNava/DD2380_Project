@@ -233,11 +233,15 @@ class Tetris(object):
         print(root)
         children = root.getFutureStates() # a list that contains every child to this current node
 
+        '''
         #THIS IS JUST A DEBUGGING TEST TO CONFIRM THAT THE NODES CAN BE EXPANDED
         for child in children:
             print("hola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print(child)
         ##########################
+            '''
+        mcts = MonteCarloTreeSearch(root)
+        mcts.run()
 
     def play(self):
 
