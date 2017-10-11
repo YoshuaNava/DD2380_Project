@@ -29,14 +29,13 @@ def max_search(node, depth, max_depth):
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
     hashtable = [0] * 100000  # hashtable to avoid duplicate children
-    children = []  # hold every child state
 
     def __init__(self, state, parent=None, action=None):
-        self.state = state
-        self.action = action
-        self.parent = parent
+        self.state = state # contains the copy of the game state
+        self.action = action # the action that led to this state
+        self.parent = parent # parent node reference
         self.children = []
-        self.future_states = []
+        self.future_states = [] # is self.children and self.future_Staes the same thing??
         self.wins = 0
         self.plays = 0
         self.UCB = 0
@@ -62,23 +61,12 @@ class GameNode(object):
 
         return self.future_states
 
-    def printGrid(self):
-        state = [[0 for i in xrange(GameState.GridSize.width)]
-                 for i in xrange(GameState.GridSize.height)]
-        for x in xrange(GameState.GridSize.width):
-            for y in xrange(GameState.GridSize.height):
-                state[y][x] = self.state.grid[x][y]
-        for row in state:
-            print(row)
-        print("\n")
-
     def getState(self):
         state = [[0 for i in xrange(GameState.GridSize.width)]
                  for i in xrange(GameState.GridSize.height)]
         for x in xrange(GameState.GridSize.width):
             for y in xrange(GameState.GridSize.height):
                 state[y][x] = self.state.grid[x][y]
-
         return state
 
     def getGrid(self):
