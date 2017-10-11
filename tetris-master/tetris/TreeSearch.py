@@ -34,7 +34,7 @@ class GameNode(object):
         self.state = state # contains the copy of the game state
         self.action = action # the action that led to this state
         self.parent = parent # parent node reference
-        self.children = []
+        self.visited_states = []
         self.future_states = [] # is self.children and self.future_Staes the same thing??
         self.wins = 0
         self.plays = 0
@@ -96,7 +96,7 @@ class GameNode(object):
 
     def __str__(self):
         if(self.parent is None):
-            return ("ROOT" + "\nState: " + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
+            return ("ROOT" + "\nState\n" + str(self.gridToStringPretty()) + "EOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
         else:
             return ("State:\n" + str(self.gridToStringPretty()) + "Action: " + str(self.action) + "\nEOG:" + str(self.state.end_of_game) + "\nPlays: " + str(self.plays) + "\nWins: " + str(self.wins) + "\nHeuristic: " + str(th.heuristic(self.getState())))
 
@@ -122,9 +122,9 @@ class MonteCarloTreeSearch(object):
     def UCB_sample(self, node):
         """Sampling of tree nodes based on their UCB1 values."""
         print("-------- UCB sampling --------")
-        weights = np.zeros(len(node.children))
+        weights = np.zeros(len(node.visited_states))
         i = 0
-        for child in node.children:
+        for child in node.visited_states:
             w_i = self.UCB(node, child)
             weights[i] = w_i
             i += 1
@@ -132,20 +132,20 @@ class MonteCarloTreeSearch(object):
         if(sum_weights != 0):
             weights /= sum_weights
             i = 0
-            for child in node.children:
+            for child in node.visited_states:
                 child.UCB = weights[i]
                 i += 1
         idx_max = np.argmax(weights)
-        return node.children[idx_max]
+        return node.visited_states[idx_max]
 
-    def expansion(self, node, future_states):
+    def expansion(self, node):
         """This function expands the tree by checking if all the possible actions have been performed."""
         # print("-------- Expansion --------")
-        unexplored_children = [child for child in future_states if child not in node.children]
-        if(len(unexplored_children) == 0):
-            return node, random.choice(node.children)
-        child = random.choice(unexplored_children)
-        node.children.append(child)
+        unexplored_states = [child for child in node.future_states if child not in node.visited_states]
+        if(len(unexplored_states) == 0):
+            return node, random.choice(node.visited_states)
+        child = random.choice(unexplored_states)
+        node.visited_states.append(child)
         return node, child
 
     def selection(self):
@@ -154,17 +154,17 @@ class MonteCarloTreeSearch(object):
         node = self.root
         future_states = node.getFutureStates()
 
-        if(len(node.children) < len(future_states)):
+        if(len(node.visited_states) < len(future_states)):
             # If we haven't explored all possible future states near the root, choose one unexplored state randomly and expand the tree
-            _, node = self.expansion(self.root, future_states)
+            _, node = self.expansion(self.root)
         else:
             # Let's search for a leaf in the tree
-            while(len(node.children) > 0):
-                if(len(node.children) == len(future_states)):
+            while(len(node.visited_states) > 0):
+                if(len(node.visited_states) == len(future_states)):
                     # If we have explored all possible future states, pick the "best one"
                     node = self.UCB_sample(node)
                 else:
-                    _, node = self.expansion(node, future_states)
+                    _, node = self.expansion(node)
                 future_states = node.getFutureStates()
 
         node.plays += 1
@@ -240,7 +240,7 @@ class MonteCarloTreeSearch(object):
             itr += 1
 
         best_state = self.UCB_sample(self.root)
-        print("    Number of nodes explored near root = " + str(len(self.root.children)))
+        print("    Number of nodes explored near root = " + str(len(self.root.visited_states)))
         print("    Best future state:")
         print(best_state)
         print("    Best action to take = " + str(best_state.action))
