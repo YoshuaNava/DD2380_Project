@@ -240,7 +240,8 @@ class Tetris(object):
         # ##########################
             '''
         mcts = MonteCarloTreeSearch(root)
-        mcts.run()
+        best_child = mcts.run()
+        self.best_action = best_child.action
 
     def play(self):
 

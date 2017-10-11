@@ -4,9 +4,6 @@ def place(self):
     actions = self.best_action
     rot = self.curr_piece.rotState.r
     tran = self.curr_piece.tranState.t
-    print "aaaaaahhhhh"
-    print rot
-    print tran
     if (actions[1] > tran):
         self.lateral_piece_move(1)
     elif (actions[1] < tran):
