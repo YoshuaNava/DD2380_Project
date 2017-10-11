@@ -13,6 +13,7 @@ class TetrisGame():
         self.next_piece = copy.deepcopy(nextPiece)
         self.action = (copy.deepcopy(rotation), copy.deepcopy(translation))
         self.end_of_game = False
+        self.cleared_rows = 0
 
         # perform actions IF NOT ROOT NODE
         if (rotation != -1 and translation != -1):
@@ -98,6 +99,7 @@ class TetrisGame():
 
     # Shift above rows down from cleared row.
     def shift_row_down(self, row):
+        self.cleared_rows += 1
         for x in xrange(GridSize.width):
             for y in reversed(xrange(row)):
                 self.grid[x][y + 1] = self.grid[x][y]

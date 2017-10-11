@@ -40,6 +40,7 @@ class GameNode(object):
         self.plays = 0
         self.UCB = 0
         self.heuristic = th.heuristic(self.getState())
+        self.cleared_rows = state.cleared_rows # THIS IS THE NUMBER OF CLEARED ROWS FROM PARENT NODE --> THIS NODE (that is, only one step)
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
