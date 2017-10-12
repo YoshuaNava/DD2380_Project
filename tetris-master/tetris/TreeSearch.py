@@ -11,6 +11,19 @@ import tetris.heuristic as th
 
 PSEUDO_INFINITY = 10000000000.0
 
+def shallowMaxSearch(root):
+    future_states = root.getFutureStates()
+    best_state = random.choice(future_states)   # Random policy
+    max_val = -PSEUDO_INFINITY
+
+    for i, state in enumerate(future_states):
+        if (max_val < state.heuristic):
+            max_val = state.heuristic
+            best_state = state
+
+    return best_state
+
+
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
 
@@ -24,12 +37,12 @@ class GameNode(object):
         self.wins = 0
         self.plays = 0
         self.UCB = 0
+        #print self.gridToStringPretty()
         self.heuristic = th.heuristic(self.getState())
         if(parent is not None):
             self.state.updateScore()
 
         # self.cleared_rows = state.cleared_rows # THIS IS THE NUMBER OF CLEARED ROWS FROM PARENT NODE --> THIS NODE (that is, only one step)
-        
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
@@ -38,9 +51,8 @@ class GameNode(object):
                 for rotation in range(0, 4, 1):  # Number of rotations
                     # Simulate the game by dong a few rotations and translations: get the new state (for each performed move)
                     new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation, self.state.level, self.state.lines, self.state.score)
-
-                    action = (rotation, translation)
-                    child = GameNode(new_state, self, action)
+                    action_child = (rotation, translation)
+                    child = GameNode(new_state, self, action_child)
 
                     # hashing preprocess
                     child_grid_string = child.gridToString()

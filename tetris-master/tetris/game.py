@@ -8,7 +8,7 @@ from tetris.sound import Mixer
 from tetris.piece import random_piece
 
 import GameState
-from TreeSearch import MonteCarloTreeSearch, GameNode
+from TreeSearch import MonteCarloTreeSearch, GameNode, shallowMaxSearch
 
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
@@ -40,7 +40,8 @@ class Tetris(object):
         # Countdown to current piece drop
         self.time_to_drop -= 1
         if self.time_to_drop < 0:
-            self.place(self)
+            self.drop_piece()
+           #self.place(self)
             self.time_to_drop = self.fall_speed
             self.drop_piece(1)
         
@@ -227,11 +228,13 @@ class Tetris(object):
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
 
         ## Note: Before running MCTS we should verify if the game is over
-        mcts = MonteCarloTreeSearch(root)
-        best_child = mcts.run()
-        # print "ahhhhhhhhhhhhhhhhhhh"
+        #mcts = MonteCarloTreeSearch(root)
+        #best_child = mcts.run()
+        best_child = shallowMaxSearch(root)
         self.best_action = best_child.action
-        # print type(best_child)
+
+        #self.drop_piece()
+
         # print type(state.curr_piece)
         # print type(root)
         # self.place(state, best_action)
@@ -253,6 +256,32 @@ class Tetris(object):
         
     def game_over(self):
         return not self.running
+
+
+    # Translate piece by delta
+        for _ in range(abs(dx)):
+            self.clear_grid_piece(self.curr_piece)
+            self.curr_piece.pos.x += dx/abs(dx)
+            if not self.valid_move(self.curr_piece):
+                self.curr_piece.pos.x -= dx/abs(dx)
+
+            self.set_grid_piece(self.curr_piece)
+
+    # Rotate piece by delta
+        self.clear_grid_piece(self.curr_piece)
+        if dr < 0:
+            self.curr_piece.rotate_left()
+            if not self.valid_move(self.curr_piece):
+                self.curr_piece.rotate_right()
+        elif dr > 0:
+            # EXTENT ROTATION FUNCTION
+            for _ in range(dr):
+                self.curr_piece.rotate_right()
+                if not self.valid_move(self.curr_piece):
+                    self.curr_piece.rotate_left()
+
+        self.set_grid_piece(self.curr_piece)
+
 
 class Statistics(object):
     
@@ -294,3 +323,4 @@ class Statistics(object):
             return True
         else:
             return False
+

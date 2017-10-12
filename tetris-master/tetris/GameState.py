@@ -27,7 +27,7 @@ class TetrisGame():
         self.score = score
 
         # perform actions IF NOT ROOT NODE
-        if (rotation != -1 and translation != -1):
+        if (rotation != -1):
             self.rotate_piece(rotation)
             self.lateral_piece_move(translation)
             self.drop_piece()
@@ -58,12 +58,13 @@ class TetrisGame():
 
     # Translate piece by delta
     def lateral_piece_move(self, dx):
-        self.clear_grid_piece(self.curr_piece)
-        self.curr_piece.pos.x += dx
-        if not self.valid_move(self.curr_piece):
-            self.curr_piece.pos.x -= dx
+        for _ in range(abs(dx)):
+            self.clear_grid_piece(self.curr_piece)
+            self.curr_piece.pos.x += dx/abs(dx)
+            if not self.valid_move(self.curr_piece):
+                self.curr_piece.pos.x -= dx/abs(dx)
 
-        self.set_grid_piece(self.curr_piece)
+            self.set_grid_piece(self.curr_piece)
 
     # Rotate piece by delta
     def rotate_piece(self, dr):
