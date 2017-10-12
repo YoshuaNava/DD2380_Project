@@ -228,9 +228,13 @@ class Tetris(object):
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
 
         ## Note: Before running MCTS we should verify if the game is over
-        #mcts = MonteCarloTreeSearch(root)
-        #best_child = mcts.run()
-        best_child = DEEEEEEEPMaxSearch(root)
+        # MCTS gameplaying
+        mcts = MonteCarloTreeSearch(root)
+        best_child = mcts.run()
+
+        # Max-search
+        # best_child = shallowMaxSearch(root)
+        # best_child = DEEEEEEEPMaxSearch(root)
         #print "ahhhhhhhhhhhhhhhhhhh"
         self.best_action = best_child.action
         #print ("BEST ACTIONEEEEE", self.best_action)
