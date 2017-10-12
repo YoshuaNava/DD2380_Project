@@ -231,8 +231,12 @@ class Tetris(object):
         #mcts = MonteCarloTreeSearch(root)
         #best_child = mcts.run()
         best_child = shallowMaxSearch(root)
+        #print "ahhhhhhhhhhhhhhhhhhh"
         self.best_action = best_child.action
+        #print ("BEST ACTIONEEEEE", self.best_action)
 
+        self.iterative_rotate_piece(self.best_action[0])
+        self.iterative_lateral_piece_move(self.best_action[1])
         #self.drop_piece()
 
         # print type(state.curr_piece)
@@ -259,6 +263,7 @@ class Tetris(object):
 
 
     # Translate piece by delta
+    def iterative_lateral_piece_move(self, dx):
         for _ in range(abs(dx)):
             self.clear_grid_piece(self.curr_piece)
             self.curr_piece.pos.x += dx/abs(dx)
@@ -268,6 +273,7 @@ class Tetris(object):
             self.set_grid_piece(self.curr_piece)
 
     # Rotate piece by delta
+    def iterative_rotate_piece(self, dr):
         self.clear_grid_piece(self.curr_piece)
         if dr < 0:
             self.curr_piece.rotate_left()
