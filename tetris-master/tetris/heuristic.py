@@ -6,17 +6,20 @@ def heuristic(gamefield):
     h1 = getNumHoles(gamefield)          # Minimize this value (i.e. negative factor)
     h2 = getAggregateHeight(gamefield) # Minimize
     #h3 = getHeightVariance(gamefield)  # Minimize
-    #h4 = getClearedLines(gamefield)    # this exists implicit in h2
+    h4 = getClearedLines(gamefield)    # this exists implicit in h2
 
     # Factors for respectively function
-    a = -100
+    # a = -100 # For super good results with max-search
+    # b = -0.5
+    a = -10 # For super good results with MCTS
     b = -0.5
     c = 0
-    d = 0
+    d = 50
 
     h3 = 0
+    # h4 = 0
     # Heuristic
-    h = a * h1 + b * h2 + c * h3
+    h = a * h1 + b * h2 + c * h3 + d * h4
     return h
 
 

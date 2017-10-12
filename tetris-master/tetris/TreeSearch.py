@@ -126,31 +126,34 @@ class MonteCarloTreeSearch(object):
         self.max_sims = 1
         self.max_time = 5.0
         self.max_depth = 2
+        self.max_avg_heuristic = 10
         self.time_start = 0
         self.root = root_node  
         self.root.parent = None
         self.root.plays = 1
-        self.C = 0.1
+        self.C = 0.5
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
-        return child.wins/child.plays + self.C * math.sqrt(math.log(node.plays) / child.plays)
+        return child.wins + self.C * math.sqrt(math.log(node.plays) / child.plays)
 
     def UCB_sample(self, node):
         """Sampling of tree nodes based on their UCB1 values."""
-        print("-------- UCB sampling --------")
+        # print("-------- UCB sampling --------")
         weights = np.zeros(len(node.visited_states))
         i = 0
         for i, child in enumerate(node.visited_states):
             weights[i] = self.UCB(node, child)
-
+        # sum_weights = np.sum(abs(weights))
+        # if(sum_weights != 0):
+        #     weights /= sum_weights
         print(weights)
         idx_max = np.argmax(weights)
         return node.visited_states[idx_max]
 
     def expansion(self, node):
         """This function expands the tree by checking if all the possible actions have been performed."""
-        print("-------- Expansion --------")
+        # print("-------- Expansion --------")
         unexplored_states = [child for child in node.future_states if child not in node.visited_states]
         child = random.choice(unexplored_states)
         child.getFutureStates()
@@ -160,35 +163,55 @@ class MonteCarloTreeSearch(object):
 
     def selection(self):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
-        print("-------- Selection --------")
+        # print("-------- Selection --------")
         node = self.root
         # UCB sampling the future states
         while(len(node.visited_states)==len(node.future_states)):
             node = self.UCB_sample(node)
         if(len(node.visited_states)<len(node.future_states)):
             _, node = self.expansion(node)
-        print("                 Depth of expanded node!!!!! " + str(node.depth))
+        # print("                 Depth of expanded node!!!!! " + str(node.depth))
         node.plays += 1
         return node
 
     def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
-        print("-------- Simulation --------")
+        # print("-------- Simulation --------")
         sim = 0
         child = node
+        
+        inc_score = 0
+        sum_heuristic = node.heuristic
+        
         while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             child = shallowMaxSearch(child)
             sim += 1
-        if (node.state.score + 10 < child.state.score):
+            inc_score += child.state.score - child.parent.state.score
+            sum_heuristic += child.heuristic
+
+
+        avg_heuristic = sum_heuristic/(self.max_sims+1)
+        print("EEEEEPPPPPPPAAAAAALLLLLEEEE")
+        print("root ", node.heuristic)
+        print("latest child ", child.heuristic)
+        print("avg_heuristic ", avg_heuristic)
+        if(node.heuristic!=0):
+            print("ratio of avg heuristic to father ", abs(avg_heuristic)/abs(node.heuristic))
+        print("heuristic of father is 0")
+        print("ratio of avg heuristic to child ", abs(avg_heuristic)/abs(child.heuristic))
+
+        # child.wins += ratio_heuristic
+        if (abs(avg_heuristic) < 10)  or (sum_heuristic > 0):
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             child.wins += 1
+        #     child.wins += sum_heuristic
         return child
 
     def backpropagation(self, node):
         """Function to propagate the score from the leafs to the tree root."""
-        print("-------- Backpropagation --------")
+        # print("-------- Backpropagation --------")
         while(node.parent is not None):
             parent = node.parent
             parent.plays += 1
@@ -198,20 +221,20 @@ class MonteCarloTreeSearch(object):
 
     def MCTS_sample(self):
         """Most important function of MCTS. It triggers the process of selection, simulation and backpropagation."""
-        dt = time.time()
+        # dt = time.time()
         node = self.selection()
-        dt = time.time() - dt
-        print("         Selection Time elapsed = " + str(dt))
+        # dt = time.time() - dt
+        # print("         Selection Time elapsed = " + str(dt))
         
-        dt = time.time()
+        # dt = time.time()
         node = self.simulation(node)
-        dt = time.time() - dt
-        print("         Simulation Time elapsed = " + str(dt))
+        # dt = time.time() - dt
+        # print("         Simulation Time elapsed = " + str(dt))
 
-        dt = time.time()
+        # dt = time.time()
         root = self.backpropagation(node)
-        dt = time.time() - dt
-        print("         Backpropagation Time elapsed = " + str(dt))
+        # dt = time.time() - dt
+        # print("         Backpropagation Time elapsed = " + str(dt))
 
         return root
 
