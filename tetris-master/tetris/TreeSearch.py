@@ -63,17 +63,12 @@ class GameNode(object):
         if(len(self.future_states) == 0):
             depth_children = self.depth + 1
             # Translations relative to the middle of the board
-            dt = time.time()
             
             for translation in range(-5, 6, 1):
                 for rotation in range(0, 4, 1):  # Number of rotations
                     # Simulate the game by dong a few rotations and translations: get the new state (for each performed move)
-                    # dt = time.time()
                     new_state = GameState.TetrisGame(self.state.grid, self.state.curr_piece, self.state.next_piece, rotation, translation, self.state.level, self.state.lines, self.state.score)
                     action_child = (rotation, translation)
-                    # dt = time.time() - dt
-                    # print("                     State creation Time elapsed = " + str(dt))
-
                     child = GameNode(new_state, self, action_child, depth_children)
                     
                     # hashing preprocess
@@ -84,9 +79,6 @@ class GameNode(object):
                     if (self.hashtable[hash_value % self.hash_length] == 0):
                         self.hashtable[hash_value % self.hash_length] = 1
                         self.future_states.append(child)
-
-            dt = time.time() - dt
-            print("                     Future states estimation Time elapsed = " + str(dt))
 
         return self.future_states
 
@@ -131,14 +123,14 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_iter = 30
-        self.max_sims = 2
+        self.max_sims = 1
         self.max_time = 5.0
         self.max_depth = 2
         self.time_start = 0
         self.root = root_node  
         self.root.parent = None
         self.root.plays = 1
-        self.C = 0.5
+        self.C = 0.1
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
@@ -159,15 +151,10 @@ class MonteCarloTreeSearch(object):
     def expansion(self, node):
         """This function expands the tree by checking if all the possible actions have been performed."""
         print("-------- Expansion --------")
-        dt = time.time()
         unexplored_states = [child for child in node.future_states if child not in node.visited_states]
         child = random.choice(unexplored_states)
         child.getFutureStates()
         node.visited_states.append(child)
-
-        dt = time.time() - dt
-        print("             Expansion Time elapsed = " + str(dt))
-        
 
         return node, child
 
@@ -175,24 +162,12 @@ class MonteCarloTreeSearch(object):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
         print("-------- Selection --------")
         node = self.root
-        dt = time.time()
         # UCB sampling the future states
         while(len(node.visited_states)==len(node.future_states)):
             node = self.UCB_sample(node)
-
-        
-        dt = time.time() - dt
-        print("             Sampling Time elapsed = " + str(dt))
-        
-        
-        dt = time.time()
-        # Expand tree
         if(len(node.visited_states)<len(node.future_states)):
             _, node = self.expansion(node)
-        dt = time.time() - dt
-
         print("                 Depth of expanded node!!!!! " + str(node.depth))
-
         node.plays += 1
         return node
 
@@ -204,13 +179,9 @@ class MonteCarloTreeSearch(object):
         child = node
         while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
-            # future_states = child.getFutureStates()
-            # child = random.choice(future_states)   # Random policy
             child = shallowMaxSearch(child)
-
             sim += 1
-
-        if (self.root.state.score + 100 <= child.state.score):
+        if (node.state.score + 10 < child.state.score):
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             child.wins += 1
         return child

@@ -16,10 +16,12 @@ class TetrisGame():
     }
 
     def __init__(self, grid, piece, nextPiece, rotation, translation, level=0, lines=0, score=0):
-        self.grid = copy.deepcopy(grid)
-        self.curr_piece = copy.deepcopy(piece)
-        self.next_piece = copy.deepcopy(nextPiece)
-        self.action = (copy.deepcopy(rotation), copy.deepcopy(translation))
+        self.grid = [[grid[x][y] for y in xrange(GridSize.height)] for x in xrange(GridSize.width)]
+        # self.curr_piece = copy.deepcopy(piece)
+        # self.next_piece = copy.deepcopy(nextPiece)
+        self.curr_piece = piece.copy()
+        self.next_piece = nextPiece.copy()
+        self.action = (rotation, translation)
         self.end_of_game = False
         self.cleared_rows = 0
         self.level = level
