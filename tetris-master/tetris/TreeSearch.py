@@ -93,18 +93,18 @@ class MonteCarloTreeSearch(object):
 
     def __init__(self, root_node):
         # MCTS parameters
-        self.max_simulations = 1  # max search length
-        self.max_iter = 1
-        self.max_time = 3.0
+        self.max_simulations = 3  # max search length
+        self.max_iter = 15
+        self.max_time = 5.0
         self.time_start = 0
         self.root = root_node
         self.root.parent = None
         self.root.plays = 1
-        self.C = 1.0
+        self.C = 0.5
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
-        return child.wins + self.C * math.sqrt(math.log(node.plays) / child.plays)
+        return child.wins/child.plays + self.C * math.sqrt(math.log(node.plays) / child.plays)
 
     def UCB_sample(self, node):
         """Sampling of tree nodes based on their UCB1 values."""
@@ -115,13 +115,14 @@ class MonteCarloTreeSearch(object):
             w_i = self.UCB(node, child)
             weights[i] = w_i
             i += 1
-        sum_weights = np.sum(weights)
-        if(sum_weights != 0):
-            weights /= sum_weights
-            i = 0
-            for child in node.visited_states:
-                child.UCB = weights[i]
-                i += 1
+        # Not necessary to normalize weights. Just for debugging
+        # sum_weights = np.sum(weights)
+        # if(sum_weights != 0):
+        #     weights /= sum_weights
+        #     i = 0
+        #     for child in node.visited_states:
+        #         child.UCB = weights[i]
+        #         i += 1
         idx_max = np.argmax(weights)
         return node.visited_states[idx_max]
 
@@ -129,113 +130,86 @@ class MonteCarloTreeSearch(object):
         """This function expands the tree by checking if all the possible actions have been performed."""
         # print("-------- Expansion --------")
         unexplored_states = [child for child in node.future_states if child not in node.visited_states]
-        if(len(unexplored_states) == 0):
-            return node, random.choice(node.visited_states)
         child = random.choice(unexplored_states)
         node.visited_states.append(child)
         return node, child
 
     def selection(self):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
-        print("-------- Selection --------")
+        # print("-------- Selection --------")
         node = self.root
         future_states = node.getFutureStates()
-
-        if(len(node.visited_states) < len(future_states)):
-        # print(node)
-            _, node = self.expansion(self.root)
-        else:
-            # Let's search for a leaf in the tree
-            while(len(node.visited_states) > 0):
-                if(len(node.visited_states) == len(future_states)):
-                    # If we have explored all possible future states, pick the "best one"
-                    node = self.UCB_sample(node)
-                else:
-                    _, node = self.expansion(node)
-                future_states = node.getFutureStates()
+        # UCB sampling the future states
+        while(len(node.visited_states)==len(node.future_states)):
+            node = self.UCB_sample(node)
+        # Expand tree
+        if(len(node.visited_states)<len(node.future_states)):
+            _, node = self.expansion(node)
         node.plays += 1
         return node
 
     def simulation(self, node):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
-        print("-------- Simulation --------")
+        # print("-------- Simulation --------")
         itr = 0
         child = node
         while (itr < self.max_simulations):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
-            children = child.getFutureStates()
-            if(len(children) > 0):
-                # child = random.choice(children)   # Random policy
+            future_states = child.getFutureStates()
+            if(len(future_states) > 0):
+                # child = random.choice(future_states)   # Random policy
                 max_val = -PSEUDO_INFINITY
-                index = random.randint(0, len(children)-1)
-                for i in range(len(children)):
-                    if(max_val < children[i].heuristic):
-                        max_val = children[i].heuristic
-                        print(children[i].heuristic)
-                        print(child)
+                index = random.randint(0, len(future_states)-1)
+                for i in range(len(future_states)):
+                    if(max_val < future_states[i].heuristic):
+                        max_val = future_states[i].heuristic
                         index = i
-                        
-                child = children[index]
+                child = future_states[index]
             else:
                 break
             itr += 1
-
-        print("    Simulations ran = " + str(itr))
         # if (points/self.max_simulations > -30):
-        if (self.root.state.score < child.state.score) and (self.root.state.cleared_rows < child.state.cleared_rows):
-            print("promising branch!!!!!!!!")
-            print(self.root.state.score)
-            print(child.state.score)
+        if (self.root.state.score < child.state.score) and (self.root.heuristic <= child.heuristic):
             child.wins += 1
         return child
 
-    def backpropagation(self, child):
+    def backpropagation(self, node):
         """Function to propagate the score from the leafs to the tree root."""
-        print("-------- Backpropagation --------")
-        node = child
+        # print("-------- Backpropagation --------")
         while(node.parent is not None):
             parent = node.parent
             parent.plays += 1
             parent.wins += node.wins
             node = parent
-
         return node
 
     def MCTS_sample(self):
         """Most important function of MCTS. It triggers the process of selection, simulation and backpropagation."""
         node = self.selection()
+        elapsed = time.time() - self.time_start
+        print("    Time elapsed = " + str(elapsed))
+
         node = self.simulation(node)
+        elapsed = time.time() - self.time_start
+        print("    Time elapsed = " + str(elapsed))
+
         root = self.backpropagation(node)
+        elapsed = time.time() - self.time_start
+        print("    Time elapsed = " + str(elapsed))
+
         return root
 
     def run(self):
         """Monte Carlo Tree Search"""
         print("\n\n************  MCTS ************")
-
         self.time_start = time.time()
         elapsed = 0
-
-        future_states = self.root.getFutureStates()
-        print(self.root)
-        print("    Length of future nodes list = " + str(len(future_states)))
-#        best_state = random.choice(future_states)
-
+        self.root.getFutureStates()
         itr = 0
         while(itr < self.max_iter) and (elapsed < self.max_time):
             print("##### Iteration " + str(itr) + " #####")
-            # self.root = self.MCTS_sample()
-            node = self.selection()
-            elapsed = time.time() - self.time_start
-            print("    Time elapsed = " + str(elapsed))
-
-            node = self.simulation(node)
-            elapsed = time.time() - self.time_start
-            print("    Time elapsed = " + str(elapsed))
-
-            root = self.backpropagation(node)
-            elapsed = time.time() - self.time_start
-            print("    Time elapsed = " + str(elapsed))
+            self.root = self.MCTS_sample()
             itr += 1
 
         best_state = self.UCB_sample(self.root)
@@ -247,10 +221,5 @@ class MonteCarloTreeSearch(object):
         return best_state
 
 
-""" To instantiate this class, and play the game with MCTS, add the following snippet to the game code:
 
-    if(gameState.getRound() == 0):
-        mcts = MonteCarloTreeSearch(gameState)
-    mcts.run(game_state)
 
-"""
