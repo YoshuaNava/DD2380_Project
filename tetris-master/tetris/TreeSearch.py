@@ -23,6 +23,19 @@ def shallowMaxSearch(root):
 
     return best_state
 
+def DEEEEEEEPMaxSearch(root):
+    future_states = root.getFutureStates()
+    best_state = random.choice(future_states)   # Random policy
+    max_val = -PSEUDO_INFINITY
+
+    for i, state in enumerate(future_states):
+        val = state.heuristic + shallowMaxSearch(state).heuristic
+        if (max_val < val):
+            max_val = val
+            best_state = state
+
+    return best_state
+
 
 class GameNode(object):
     """GameNode contains all vital information about a game state."""
@@ -106,7 +119,7 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_iter = 15
-        self.max_sims = 3
+        self.max_sims = 2
         self.max_time = 5.0
         self.time_start = 0
         self.root = root_node
@@ -161,20 +174,13 @@ class MonteCarloTreeSearch(object):
         while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             future_states = child.getFutureStates()
-            if(len(future_states) > 0):
                 # child = random.choice(future_states)   # Random policy
-                max_val = -PSEUDO_INFINITY
-                index = random.randint(0, len(future_states)-1)
-                for i, state in enumerate(future_states):
-                    if(max_val < state.heuristic):
-                        max_val = state.heuristic
-                        index = i
-                child = future_states[index]
-            else:
-                break
+            child = shallowMaxSearch(child)
+
             sim += 1
 
-        if (self.root.heuristic < child.heuristic):
+        if (self.root.state.score + 100 <= child.state.score):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             child.wins += 1
         return child
 

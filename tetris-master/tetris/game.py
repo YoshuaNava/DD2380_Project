@@ -8,7 +8,7 @@ from tetris.sound import Mixer
 from tetris.piece import random_piece
 
 import GameState
-from TreeSearch import MonteCarloTreeSearch, GameNode, shallowMaxSearch
+from TreeSearch import MonteCarloTreeSearch, GameNode, shallowMaxSearch, DEEEEEEEPMaxSearch
 
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
@@ -230,7 +230,7 @@ class Tetris(object):
         ## Note: Before running MCTS we should verify if the game is over
         #mcts = MonteCarloTreeSearch(root)
         #best_child = mcts.run()
-        best_child = shallowMaxSearch(root)
+        best_child = DEEEEEEEPMaxSearch(root)
         #print "ahhhhhhhhhhhhhhhhhhh"
         self.best_action = best_child.action
         #print ("BEST ACTIONEEEEE", self.best_action)

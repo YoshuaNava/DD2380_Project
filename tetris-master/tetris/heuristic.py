@@ -9,7 +9,7 @@ def heuristic(gamefield):
     #h4 = getClearedLines(gamefield)    # this exists implicit in h2
 
     # Factors for respectively function
-    a = -1
+    a = -100
     b = -0.5
     c = 0
     d = 0
