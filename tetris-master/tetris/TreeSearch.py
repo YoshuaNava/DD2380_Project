@@ -93,8 +93,8 @@ class MonteCarloTreeSearch(object):
 
     def __init__(self, root_node):
         # MCTS parameters
-        self.max_simulations = 3  # max search length
         self.max_iter = 15
+        self.max_sims = 3
         self.max_time = 5.0
         self.time_start = 0
         self.root = root_node
@@ -111,18 +111,10 @@ class MonteCarloTreeSearch(object):
         print("-------- UCB sampling --------")
         weights = np.zeros(len(node.visited_states))
         i = 0
-        for child in node.visited_states:
-            w_i = self.UCB(node, child)
-            weights[i] = w_i
-            i += 1
-        # Not necessary to normalize weights. Just for debugging
-        # sum_weights = np.sum(weights)
-        # if(sum_weights != 0):
-        #     weights /= sum_weights
-        #     i = 0
-        #     for child in node.visited_states:
-        #         child.UCB = weights[i]
-        #         i += 1
+        for i, child in enumerate(node.visited_states):
+            weights[i] = self.UCB(node, child)
+
+        print(weights)
         idx_max = np.argmax(weights)
         return node.visited_states[idx_max]
 
@@ -131,6 +123,7 @@ class MonteCarloTreeSearch(object):
         # print("-------- Expansion --------")
         unexplored_states = [child for child in node.future_states if child not in node.visited_states]
         child = random.choice(unexplored_states)
+        child.getFutureStates()
         node.visited_states.append(child)
         return node, child
 
@@ -138,7 +131,6 @@ class MonteCarloTreeSearch(object):
         """This function analyzes the tree, expands it if needed, and chooses the best path to follow based on UCB."""
         # print("-------- Selection --------")
         node = self.root
-        future_states = node.getFutureStates()
         # UCB sampling the future states
         while(len(node.visited_states)==len(node.future_states)):
             node = self.UCB_sample(node)
@@ -152,25 +144,25 @@ class MonteCarloTreeSearch(object):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
         # print("-------- Simulation --------")
-        itr = 0
+        sim = 0
         child = node
-        while (itr < self.max_simulations):
+        while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             future_states = child.getFutureStates()
             if(len(future_states) > 0):
                 # child = random.choice(future_states)   # Random policy
                 max_val = -PSEUDO_INFINITY
                 index = random.randint(0, len(future_states)-1)
-                for i in range(len(future_states)):
-                    if(max_val < future_states[i].heuristic):
-                        max_val = future_states[i].heuristic
+                for i, state in enumerate(future_states):
+                    if(max_val < state.heuristic):
+                        max_val = state.heuristic
                         index = i
                 child = future_states[index]
             else:
                 break
-            itr += 1
-        # if (points/self.max_simulations > -30):
-        if (self.root.state.score < child.state.score) and (self.root.heuristic <= child.heuristic):
+            sim += 1
+
+        if (self.root.heuristic < child.heuristic):
             child.wins += 1
         return child
 
@@ -199,6 +191,7 @@ class MonteCarloTreeSearch(object):
         print("    Time elapsed = " + str(elapsed))
 
         return root
+
 
     def run(self):
         """Monte Carlo Tree Search"""

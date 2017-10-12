@@ -68,7 +68,6 @@ class TetrisGame():
     # Rotate piece by delta
     def rotate_piece(self, dr):
         self.clear_grid_piece(self.curr_piece)
-
         if dr < 0:
             self.curr_piece.rotate_left()
             if not self.valid_move(self.curr_piece):
@@ -85,7 +84,6 @@ class TetrisGame():
     # Drop piece to the bottom
     def drop_piece(self, incr=GridSize.height):
         self.clear_grid_piece(self.curr_piece)
-
         # Find grid bottom
         place = False
         for i in range(incr):
@@ -109,7 +107,6 @@ class TetrisGame():
         for y in xrange(GridSize.height):
             if (len([x for x in xrange(GridSize.width) if self.grid[x][y]]) == GridSize.width):
                 cleared.append(y)
-
         # Clear rows & shift down remains.
         if cleared:
             for row in cleared:
@@ -117,7 +114,6 @@ class TetrisGame():
                     self.grid[x][row] = 0
             for row in cleared:
                 self.shift_row_down(row)
-
         self.new_piece()
 
     # Shift above rows down from cleared row.
