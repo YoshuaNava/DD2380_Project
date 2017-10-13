@@ -23,7 +23,7 @@ def shallowMaxSearch(root):
 
     return best_state
 
-def DEEEEEEEPMaxSearch(root):
+def DEEPMaxSearch(root):
     future_states = root.getFutureStates()
     best_state = random.choice(future_states)   # Random policy
     max_val = -PSEUDO_INFINITY
@@ -146,7 +146,7 @@ class MonteCarloTreeSearch(object):
         # sum_weights = np.sum(abs(weights))
         # if(sum_weights != 0):
         #     weights /= sum_weights
-        print(weights)
+        #print(weights)
         idx_max = np.argmax(weights)
         return node.visited_states[idx_max]
 
@@ -184,9 +184,8 @@ class MonteCarloTreeSearch(object):
             child = shallowMaxSearch(child)
             sim += 1
 
-        print("EEEEEPPPPPPPAAAAAALLLLLEEEE")
-        print("root ", node.heuristic)
-        print("latest child ", child.heuristic)
+        #print("root ", node.heuristic)
+        #print("latest child ", child.heuristic)
         height_father = max(th.getMaxHeights(self.root.getState()))
         height_child = max(th.getMaxHeights(child.getState()))
         holes_father = th.getNumHoles(self.root.getState())
@@ -194,16 +193,12 @@ class MonteCarloTreeSearch(object):
 
         if (height_child < height_father):
             if (holes_father > holes_child):
-                print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
                 child.wins += 4
             else:
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
                 child.wins += 3
         elif(height_child == height_father):
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             child.wins += 2
         else:
-            print("???????????????????????????????")
             if (holes_father >= holes_child):
                 child.wins += 1
 
@@ -243,24 +238,24 @@ class MonteCarloTreeSearch(object):
 
     def run(self):
         """Monte Carlo Tree Search"""
-        print("\n\n************  MCTS ************")
+        #print("\n\n************  MCTS ************")
         self.time_start = time.time()
         self.root.getFutureStates()
-        print("     Number of feasible future states = " + str(len(self.root.future_states)))
+        #print("     Number of feasible future states = " + str(len(self.root.future_states)))
         
         itr = 0
         elapsed = 0
         while(itr < self.max_iter) and (elapsed < self.max_time):
-            print("##### Iteration " + str(itr) + " #####")
+            #print("##### Iteration " + str(itr) + " #####")
             self.root = self.MCTS_sample()
             elapsed = time.time() - self.time_start
-            print("     Total time elapsed = " + str(elapsed))
+            #print("     Total time elapsed = " + str(elapsed))
             itr += 1
 
         best_state = self.UCB_sample(self.root)
-        print("    Number of nodes explored near root = " + str(len(self.root.visited_states)))
-        print("    Best future state:")
-        print(best_state)
-        print("    Best action to take = " + str(best_state.action))
+        #print("    Number of nodes explored near root = " + str(len(self.root.visited_states)))
+        #print("    Best future state:")
+        #print(best_state)
+        #print("    Best action to take = " + str(best_state.action))
 
         return best_state
