@@ -57,7 +57,6 @@ class GameNode(object):
         if(parent is not None):
             self.state.updateScore()
 
-        # self.cleared_rows = state.cleared_rows # THIS IS THE NUMBER OF CLEARED ROWS FROM PARENT NODE --> THIS NODE (that is, only one step)
 
     def getFutureStates(self):
         if(len(self.future_states) == 0):
@@ -123,7 +122,7 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_iter = 30
-        self.max_sims = 1
+        self.max_sims = 3
         self.max_time = 5.0
         self.max_depth = 2
         self.max_avg_heuristic = 10
@@ -180,33 +179,37 @@ class MonteCarloTreeSearch(object):
         # print("-------- Simulation --------")
         sim = 0
         child = node
-        
-        inc_score = 0
-        sum_heuristic = node.heuristic
-        
         while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             child = shallowMaxSearch(child)
             sim += 1
-            inc_score += child.state.score - child.parent.state.score
-            sum_heuristic += child.heuristic
 
-
-        avg_heuristic = sum_heuristic/(self.max_sims+1)
         print("EEEEEPPPPPPPAAAAAALLLLLEEEE")
         print("root ", node.heuristic)
         print("latest child ", child.heuristic)
-        print("avg_heuristic ", avg_heuristic)
-        if(node.heuristic!=0):
-            print("ratio of avg heuristic to father ", abs(avg_heuristic)/abs(node.heuristic))
-        print("heuristic of father is 0")
-        print("ratio of avg heuristic to child ", abs(avg_heuristic)/abs(child.heuristic))
+        height_father = max(th.getMaxHeights(self.root.getState()))
+        height_child = max(th.getMaxHeights(child.getState()))
+        holes_father = th.getNumHoles(self.root.getState())
+        holes_child = th.getNumHoles(child.getState())
 
-        # child.wins += ratio_heuristic
-        if (abs(avg_heuristic) < 10)  or (sum_heuristic > 0):
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            child.wins += 1
-        #     child.wins += sum_heuristic
+        if (height_child < height_father):
+            if (holes_father > holes_child):
+                print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                child.wins += 4
+            else:
+                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                child.wins += 3
+        elif(height_child == height_father):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            child.wins += 2
+        else:
+            print("???????????????????????????????")
+            if (holes_father >= holes_child):
+                child.wins += 1
+
+        if(child.state.end_of_game):
+            child.wins -= 4
+
         return child
 
     def backpropagation(self, node):
