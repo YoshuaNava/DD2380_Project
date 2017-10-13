@@ -134,7 +134,7 @@ class MonteCarloTreeSearch(object):
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
-        return child.wins + self.C * math.sqrt(math.log(node.plays) / child.plays)
+        return child.wins/child.plays + self.C * math.sqrt(math.log(node.plays) / child.plays)
 
     def UCB_sample(self, node):
         """Sampling of tree nodes based on their UCB1 values."""
@@ -143,9 +143,9 @@ class MonteCarloTreeSearch(object):
         i = 0
         for i, child in enumerate(node.visited_states):
             weights[i] = self.UCB(node, child)
-        # sum_weights = np.sum(abs(weights))
-        # if(sum_weights != 0):
-        #     weights /= sum_weights
+        sum_weights = np.sum(abs(weights))
+        if(sum_weights != 0):
+            weights /= sum_weights
         print(weights)
         idx_max = np.argmax(weights)
         return node.visited_states[idx_max]
@@ -173,43 +173,41 @@ class MonteCarloTreeSearch(object):
         node.plays += 1
         return node
 
-    def simulation(self, node):
+    def simulation(self, leaf):
         """Given an initial state, this function simulates a random playout for a given time. If the score obtained 
         is greater than one, the tree root."""
         # print("-------- Simulation --------")
         sim = 0
-        child = node
+        child = leaf
         while (sim < self.max_sims):
             # Get all the possible actions, and choose a random one. Predict the next state and evaluate it with the heuristic function
             child = shallowMaxSearch(child)
             sim += 1
 
         print("EEEEEPPPPPPPAAAAAALLLLLEEEE")
-        print("root ", node.heuristic)
+        print("leaf ", leaf.heuristic)
         print("latest child ", child.heuristic)
-        height_father = max(th.getMaxHeights(self.root.getState()))
+        height_root = max(th.getMaxHeights(self.root.getState()))
+        height_leaf = max(th.getMaxHeights(leaf.getState()))
         height_child = max(th.getMaxHeights(child.getState()))
-        holes_father = th.getNumHoles(self.root.getState())
+        holes_root = th.getNumHoles(self.root.getState())
+        holes_leaf = th.getNumHoles(leaf.getState())
         holes_child = th.getNumHoles(child.getState())
 
-        if (height_child < height_father):
-            if (holes_father > holes_child):
+        if (height_root > height_leaf):
+            if (holes_root > holes_leaf):
                 print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
                 child.wins += 4
             else:
                 print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                child.wins += 3
-        elif(height_child == height_father):
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            child.wins += 2
+                child.wins += 2
         else:
-            print("???????????????????????????????")
-            if (holes_father >= holes_child):
+            if (holes_root >= holes_child):
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 child.wins += 1
-
-        if(child.state.end_of_game):
-            child.wins -= 4
-
+            if (height_root >= height_child):
+                print("???????????????????????????????")
+                child.wins += 2
         return child
 
     def backpropagation(self, node):

@@ -12,7 +12,8 @@ def heuristic(gamefield):
     # a = -100 # For super good results with max-search
     # b = -0.5
     a = -10 # For super good results with MCTS
-    b = -0.5
+
+    b = -5
     c = 0
     d = 0
 
@@ -49,7 +50,7 @@ def getNumHoles(gamefield):
 
 # Number of aggregate height
 def getAggregateHeight(gamefield):
-    sumHeight = sum(getSquaredMaxHeights(gamefield))
+    sumHeight = sum(getSquaredMaxHeights(gamefield))**(1)
     return sumHeight
 
 
@@ -70,7 +71,7 @@ def getSquaredMaxHeights(gamefield):
         tempHeight = []
         for row in xrange(5,GridSize.height):
             if (gamefield[row][col] > 0):
-                tempHeight.append(GridSize.height - 1 - row)
+                tempHeight.append(GridSize.height - row)
         if len(tempHeight) > 0:
             heights.append(max(tempHeight)**2)
         else:

@@ -233,8 +233,8 @@ class Tetris(object):
         best_child = mcts.run()
 
         # Max-search
-        # best_child = shallowMaxSearch(root)
-        # best_child = DEEEEEEEPMaxSearch(root)
+        #best_child = shallowMaxSearch(root)
+        #best_child = DEEEEEEEPMaxSearch(root)
         #print "ahhhhhhhhhhhhhhhhhhh"
         self.best_action = best_child.action
         #print ("BEST ACTIONEEEEE", self.best_action)
