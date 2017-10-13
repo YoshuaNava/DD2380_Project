@@ -122,7 +122,7 @@ class MonteCarloTreeSearch(object):
     def __init__(self, root_node):
         # MCTS parameters
         self.max_iter = 30
-        self.max_sims = 3
+        self.max_sims = 1
         self.max_time = 5.0
         self.max_depth = 2
         self.max_avg_heuristic = 10
