@@ -3,26 +3,23 @@ GridSize = Dimension(10, 20)
 
 def heuristic(gamefield):
     # Heuristic functions
-    h1 = getNumHoles(gamefield)          # Minimize this value (i.e. negative factor)
+    h1 = getNumHoles(gamefield)        # Minimize this value (i.e. negative factor)
     h2 = getAggregateHeight(gamefield) # Minimize
-    #h3 = getHeightVariance(gamefield)  # Minimize
-    # h4 = getClearedLines(gamefield)    # this exists implicit in h2
+    #h3 = getHeightVariance(gamefield) # Minimize
+    # h4 = getClearedLines(gamefield)  # this exists implicit in h2
 
     # Factors for respectively function
-    # a = -100 # For super good results with max-search
-    # b = -0.5
-    a = -10 # For super good results with MCTS
-
-    b = -5
+    a = -2 # For super good results with MCTS
+    b = -60
     c = 0
     d = 0
 
     h3 = 0
     h4 = 0
+
     # Heuristic
     h = a * h1 + b * h2 + c * h3 + d * h4
     return h
-
 
 def getClearedLines(gamefield):
     # Find cleared rows
@@ -30,7 +27,6 @@ def getClearedLines(gamefield):
     for row in xrange(GridSize.height):
         if (len([col for col in xrange(GridSize.width) if gamefield[row][col]]) == GridSize.width):
             num_cleared += 1
-
     return num_cleared
 
 
@@ -50,7 +46,7 @@ def getNumHoles(gamefield):
 
 # Number of aggregate height
 def getAggregateHeight(gamefield):
-    sumHeight = sum(getSquaredMaxHeights(gamefield))**(1)
+    sumHeight = sum(getSquaredMaxHeights(gamefield))**(0.5)
     return sumHeight
 
 

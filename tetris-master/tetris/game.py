@@ -8,7 +8,7 @@ from tetris.sound import Mixer
 from tetris.piece import random_piece
 
 import GameState
-from TreeSearch import MonteCarloTreeSearch, GameNode, shallowMaxSearch, DEEEEEEEPMaxSearch
+from TreeSearch import MonteCarloTreeSearch, GameNode, shallowMaxSearch, DEEPMaxSearch
 
 # Size of the grid matrix.
 GridSize = Dimension(10, 20)
@@ -227,33 +227,30 @@ class Tetris(object):
         state = GameState.TetrisGame(self.grid, self.curr_piece, self.next_piece, rotation, translation, self.stats.level, self.stats.lines, self.stats.score)
         root = GameNode(state, None, (rotation,translation)) # create a copy of this state and generates every possible chil
 
-        ## Note: Before running MCTS we should verify if the game is over
-        # MCTS gameplaying
-        mcts = MonteCarloTreeSearch(root)
-        best_child = mcts.run()
+        ################## ALGORITHMS #####################
+        # MCTS
+        #mcts = MonteCarloTreeSearch(root)
+        #best_child = mcts.run()
 
-        # Max-search
+        # ONE DEPTH MAX SEARCH
         #best_child = shallowMaxSearch(root)
-        #best_child = DEEEEEEEPMaxSearch(root)
-        #print "ahhhhhhhhhhhhhhhhhhh"
-        self.best_action = best_child.action
-        #print ("BEST ACTIONEEEEE", self.best_action)
 
+        # TWO LAYER MAX SEARCH
+        best_child = DEEPMaxSearch(root)
+        #####################################################
+
+        self.best_action = best_child.action
+
+        # perform the actions
         self.iterative_rotate_piece(self.best_action[0])
         self.iterative_lateral_piece_move(self.best_action[1])
-        #self.drop_piece()
-
-        # print type(state.curr_piece)
-        # print type(root)
-        # self.place(state, best_action)
-
 
     def new_game(self):
         self.grid = [[0 for y in xrange(GridSize.height)] for x in xrange(GridSize.width)]
         self.stats = Statistics()
         self.new_piece()
-        # self.mixer.start.play()
-        # self.mixer.loop_music()
+        self.mixer.start.play()
+        self.mixer.loop_music()
         self.fall_speed = 30
         self.time_to_drop = self.fall_speed
         self.running = True
