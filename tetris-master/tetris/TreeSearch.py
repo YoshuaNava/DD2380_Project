@@ -121,16 +121,16 @@ class MonteCarloTreeSearch(object):
 
     def __init__(self, root_node):
         # MCTS parameters
-        self.max_iter = 30
+        self.max_iter = 70
         self.max_sims = 1
-        self.max_time = 5.0
+        self.max_time = 10.0
         self.max_depth = 2
         self.max_avg_heuristic = 10
         self.time_start = 0
         self.root = root_node  
         self.root.parent = None
         self.root.plays = 1
-        self.C = 0.5
+        self.C = 1.4
 
     def UCB(self, node, child):
         """Calculation of Upper-Confidence Bound for Trees 1."""
